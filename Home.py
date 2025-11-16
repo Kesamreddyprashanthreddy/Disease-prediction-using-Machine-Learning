@@ -9,21 +9,27 @@ import sys
 import os
 from pathlib import Path
 
-# Add src directory to path - works for both local and deployed environments
-current_dir = Path(__file__).parent
+# Add src directory to path - robust for all environments
+current_dir = Path(__file__).parent.absolute()
 src_dir = current_dir / "src"
+
+# Try multiple path configurations
 if src_dir.exists():
     sys.path.insert(0, str(src_dir))
-else:
-    # If already in src directory (Render deployment)
+if str(current_dir) not in sys.path:
     sys.path.insert(0, str(current_dir))
 
+# Import with error handling
 try:
-    from auth import auth
+    from src.auth import auth
 except ImportError:
-    # Alternative import for different deployment structures
-    import auth as auth_module
-    auth = auth_module.auth
+    try:
+        from auth import auth
+    except ImportError as e:
+        st.error(f"Failed to import auth module: {e}")
+        st.error(f"Current directory: {os.getcwd()}")
+        st.error(f"Python path: {sys.path}")
+        st.stop()
 
 # Page configuration
 st.set_page_config(
