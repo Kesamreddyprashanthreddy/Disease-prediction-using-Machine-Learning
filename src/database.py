@@ -16,9 +16,6 @@ load_dotenv(override=True)
 
 DATABASE_URL = os.getenv('DATABASE_URL')
 
-# Debug: Print database URL (remove in production)
-print(f"🔍 DATABASE_URL loaded: {DATABASE_URL[:50] if DATABASE_URL else 'None'}...")
-
 Base = declarative_base()
 
 
