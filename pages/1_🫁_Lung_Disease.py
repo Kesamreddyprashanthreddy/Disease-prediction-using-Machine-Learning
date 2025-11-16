@@ -270,8 +270,20 @@ def load_lung_model():
         os.path.join("/app", "saved_models", "lung_disease_model.h5")
     ]
     
+    # Debug: Check all paths and file sizes
+    st.sidebar.write("🔍 **Model Debug:**")
     for model_path in possible_paths:
         if os.path.exists(model_path):
+            file_size = os.path.getsize(model_path)
+            st.sidebar.write(f"✅ `{os.path.basename(model_path)}`")
+            st.sidebar.write(f"Size: {file_size / (1024*1024):.1f} MB")
+            
+            # Check if it's a Git LFS pointer (< 1KB = not downloaded)
+            if file_size < 1024:
+                st.sidebar.error(f"⚠️ Git LFS pointer only ({file_size} bytes)")
+                st.sidebar.write("Models not downloaded. See solution below.")
+                continue
+            
             try:
                 # Method 1: Try loading with compile=False and safe_mode
                 try:
@@ -364,6 +376,27 @@ def load_lung_model():
                 continue
     
     st.warning("⚠️ Lung disease model file not found in any expected location. Using demo mode.")
+    
+    # Show solution for deployment platforms
+    with st.sidebar.expander("📦 Model Deployment Solutions"):
+        st.markdown("""
+        ### For Streamlit Cloud:
+        1. Streamlit Cloud doesn't support Git LFS
+        2. **Solution**: Use a cloud storage service:
+           - Upload models to Google Drive, Dropbox, or AWS S3
+           - Download in code with `gdown` or `boto3`
+           - Or use Hugging Face Model Hub
+        
+        ### For Hugging Face Spaces:
+        1. Git LFS should work automatically
+        2. Ensure `.gitattributes` file exists
+        3. Try "Factory reboot" in Settings
+        
+        ### Model File Locations Expected:
+        - `saved_models/lung_disease_model.h5` (286 MB)
+        - Should be ~286MB, not just a few bytes
+        """)
+    
     return None, False
 
 def preprocess_image(image):
