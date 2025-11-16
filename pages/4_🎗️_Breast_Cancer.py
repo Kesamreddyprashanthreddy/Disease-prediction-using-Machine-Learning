@@ -717,7 +717,9 @@ def generate_breast_cancer_pdf_report(image, prediction, confidence, probabiliti
                          'clinical examination and additional imaging as appropriate. Final diagnosis requires tissue '
                          'sampling when indicated. Please consult with qualified radiologists and breast specialists.')
     
-    return bytes(pdf.output())
+    # Return PDF as bytes (compatible with FPDF 1.7.2 and 2.x)
+    pdf_output = pdf.output(dest='S')
+    return pdf_output if isinstance(pdf_output, bytes) else pdf_output.encode('latin-1')
 
 # Main page content
 st.title("🎗️ Breast Cancer Screening")
