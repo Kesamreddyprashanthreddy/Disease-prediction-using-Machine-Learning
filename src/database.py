@@ -55,22 +55,22 @@ class DatabaseConnection:
         
     def _detect_db_type(self):
         """Detect database type from URL"""
-        print(f"🔍 Detecting database type from URL: {self.db_url[:50] if self.db_url else 'None'}...")
+        print(f"[DB] Detecting database type from URL: {self.db_url[:50] if self.db_url else 'None'}...")
         
         if not self.db_url or self.db_url == 'your_database_url_here':
             raise ValueError("DATABASE_URL not configured in .env file. Please add your MongoDB connection string.")
         
         if self.db_url.startswith('mongodb'):
-            print("✅ Detected MongoDB")
+            print("[DB] Detected MongoDB")
             return 'mongodb'
         elif self.db_url.startswith('postgresql'):
-            print("✅ Detected PostgreSQL")
+            print("[DB] Detected PostgreSQL")
             return 'postgresql'
         elif self.db_url.startswith('mysql'):
-            print("✅ Detected MySQL")
+            print("[DB] Detected MySQL")
             return 'mysql'
         elif self.db_url.startswith('sqlite'):
-            print("✅ Detected SQLite")
+            print("[DB] Detected SQLite")
             return 'sqlite'
         else:
             raise ValueError(f"Unsupported database type. URL must start with: mongodb, postgresql, mysql, or sqlite. Got: {self.db_url[:20]}")
@@ -90,10 +90,10 @@ class DatabaseConnection:
             client.server_info()
             db_name = self.db_url.split('/')[-1].split('?')[0]
             self.connection = client[db_name]
-            print(f"✓ Connected to MongoDB database: {db_name}")
+            print(f"[DB] Connected to MongoDB database: {db_name}")
             return self.connection
         except Exception as e:
-            print(f"✗ MongoDB connection error: {e}")
+            print(f"[DB] MongoDB connection error: {e}")
             raise
     
     def _connect_sql(self):
@@ -104,10 +104,10 @@ class DatabaseConnection:
             Base.metadata.create_all(engine)
             Session = sessionmaker(bind=engine)
             self.connection = Session()
-            print(f"✓ Connected to {self.db_type.upper()} database")
+            print(f"[DB] Connected to {self.db_type.upper()} database")
             return self.connection
         except Exception as e:
-            print(f"✗ {self.db_type.upper()} connection error: {e}")
+            print(f"[DB] {self.db_type.upper()} connection error: {e}")
             raise
     
     def get_connection(self):
@@ -123,7 +123,7 @@ class DatabaseConnection:
                 self.connection.client.close()
             else:
                 self.connection.close()
-            print("✓ Database connection closed")
+            print("[DB] Database connection closed")
 
 
 # MongoDB user operations
