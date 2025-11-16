@@ -365,7 +365,7 @@ def generate_kidney_pdf_report(features, feature_names, prediction, confidence, 
     pdf.set_font('Arial', '', 12)
     pdf.cell(0, 8, f'Patient: {patient_name}', 0, 1)
     pdf.cell(0, 8, f'Analysis Date: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}', 0, 1)
-    pdf.cell(0, 8, f'Analyzed by: {st.session_state["name"]}', 0, 1)
+    pdf.cell(0, 8, f'Analyzed by: AI Medical Diagnosis System', 0, 1)
     pdf.ln(5)
     
     # Analysis Results
@@ -440,7 +440,7 @@ def generate_kidney_pdf_report(features, feature_names, prediction, confidence, 
                          'It should not be used as a substitute for professional medical diagnosis. '
                          'Please consult with qualified nephrologists and healthcare professionals for proper kidney disease evaluation.')
     
-    return pdf.output()
+    return bytes(pdf.output())
 
 # Define feature names and normal ranges
 FEATURE_NAMES = [
@@ -542,7 +542,12 @@ if input_method == "Manual Input":
         anemia = st.selectbox("Anemia", ["yes", "no"], index=1)
     
     # Patient identification
-    patient_name = st.text_input("Patient ID/Name (Optional)", placeholder="Enter patient identifier")
+    if auth.is_authenticated():
+        user_info = auth.get_current_user()
+        default_name = user_info.get('full_name', user_info.get('name', 'User'))
+        patient_name = st.text_input("Patient Name (You)", placeholder="Your full name", value=default_name, key="kidney_patient_name", disabled=True)
+    else:
+        patient_name = st.text_input("Patient Name", placeholder="Enter your name", value="Guest User", key="kidney_patient_name")
     
     # Convert categorical variables to numerical
     def encode_categorical(value, options_dict):
@@ -595,7 +600,7 @@ if input_method == "Manual Input":
                 'confidence': confidence,
                 'probabilities': probabilities,
                 'feature_importance': feature_importance,
-                'patient_name': patient_name or "Unknown Patient"
+                'patient_name': patient_name.strip() if patient_name.strip() else "Unknown Patient"
             }
             
             # Save to database
@@ -833,12 +838,19 @@ if 'kidney_results' in st.session_state:
         """)
     
     # PDF Report Generation
-    st.subheader("📄 Generate Analysis Report")
-    col1, col2, col3 = st.columns([1, 1, 1])
+    st.markdown("---")
+    st.markdown("""
+    <div style="text-align: center; padding: 1.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; margin: 2rem 0;">
+        <h3 style="color: white; margin-bottom: 0.5rem;">📋 Generate Analysis Report</h3>
+        <p style="color: rgba(255,255,255,0.9); font-size: 0.9rem; margin: 0;">Download comprehensive PDF report with kidney function analysis</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    col1, col2, col3 = st.columns([1, 2, 1])
     
     with col2:
-        if st.button("📋 Download PDF Report", type="secondary"):
-            with st.spinner("Generating analysis report..."):
+        if st.button("📥 Generate & Download PDF Report", use_container_width=True, type="primary", key="generate_kidney_pdf"):
+            with st.spinner("🔎 Generating analysis report..."):
                 pdf_bytes = generate_kidney_pdf_report(
                     results['features'],
                     results['feature_names'],
@@ -852,7 +864,8 @@ if 'kidney_results' in st.session_state:
                     label="📥 Download Report",
                     data=pdf_bytes,
                     file_name=f"Kidney_Report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf",
-                    mime="application/pdf"
+                    mime="application/pdf",
+                    use_container_width=True
                 )
                 st.success("✅ Report generated successfully!")
 
@@ -899,6 +912,5 @@ st.markdown("---")
 st.markdown("""
 <div style="text-align: center; color: #7f8c8d; padding: 1rem;">
 <p>🏥 AI Medical Diagnosis System | Kidney Disease Analysis Module</p>
-<p>⚠️ For educational and research purposes only. Not a substitute for professional medical diagnosis.</p>
 </div>
 """, unsafe_allow_html=True)

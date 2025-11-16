@@ -1,6 +1,7 @@
 # 🏥 AI Medical Diagnosis System
 
 ---
+
 title: AI Medical Diagnosis System
 emoji: 🏥
 colorFrom: blue
@@ -11,6 +12,7 @@ app_file: Home.py
 pinned: false
 license: mit
 python_version: "3.10"
+
 ---
 
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue)](https://www.python.org/)

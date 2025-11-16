@@ -493,13 +493,7 @@ def generate_breast_cancer_pdf_report(image, prediction, confidence, probabiliti
     pdf.set_font('Arial', '', 11)
     pdf.cell(50, 7, 'Radiologist:', 0, 0)
     pdf.set_font('Arial', 'B', 11)
-    try:
-        if st.session_state.get("name"):
-            pdf.cell(0, 7, f'Dr. {st.session_state["name"]}', 0, 1)
-        else:
-            pdf.cell(0, 7, 'AI Diagnostic System', 0, 1)
-    except:
-        pdf.cell(0, 7, 'AI Diagnostic System', 0, 1)
+    pdf.cell(0, 7, 'AI Medical Diagnosis System', 0, 1)
     
     pdf.ln(5)
     
@@ -726,17 +720,10 @@ def generate_breast_cancer_pdf_report(image, prediction, confidence, probabiliti
     pdf.cell(95, 7, 'Date & Time:', 0, 1)
     
     pdf.set_font('Arial', '', 10)
-    try:
-        if st.session_state.get("name"):
-            pdf.cell(95, 7, f'AI System / Dr. {st.session_state["name"]}', 0, 0)
-        else:
-            pdf.cell(95, 7, 'AI Diagnostic System', 0, 0)
-    except:
-        pdf.cell(95, 7, 'AI Diagnostic System', 0, 0)
+    pdf.cell(95, 7, 'AI Medical Diagnosis System', 0, 0)
     
     pdf.cell(95, 7, datetime.now().strftime("%B %d, %Y - %I:%M %p"), 0, 1)
     
-    return pdf.output()
     pdf.ln(3)
     
     # Important Disclaimer
@@ -748,7 +735,7 @@ def generate_breast_cancer_pdf_report(image, prediction, confidence, probabiliti
                          'clinical examination and additional imaging as appropriate. Final diagnosis requires tissue '
                          'sampling when indicated. Please consult with qualified radiologists and breast specialists.')
     
-    return pdf.output(dest='S').encode('latin-1')
+    return bytes(pdf.output())
 
 # Main page content
 st.title("🎗️ Breast Cancer Screening")
@@ -816,7 +803,12 @@ if uploaded_file is not None:
         st.markdown('<div style="background: transparent; padding: 1.5rem; border-radius: 15px;">', unsafe_allow_html=True)
         
         # Patient information
-        patient_name = st.text_input("Patient ID/Name (Optional)", placeholder="Enter patient identifier")
+        if auth.is_authenticated():
+            user_info = auth.get_current_user()
+            default_name = user_info.get('full_name', user_info.get('name', 'User'))
+            patient_name = st.text_input("Patient ID/Name", placeholder="Enter patient identifier", value=default_name, key="breast_patient_name")
+        else:
+            patient_name = st.text_input("Patient ID/Name", placeholder="Enter patient identifier", value="Guest User", key="breast_patient_name")
         
         # Analysis options
         st.markdown("**📋 Analysis Options:**")
@@ -845,7 +837,7 @@ if uploaded_file is not None:
                         'probabilities': probabilities,
                         'attention_map': attention_map,
                         'birads': birads,
-                        'patient_name': patient_name or "Unknown Patient",
+                        'patient_name': patient_name.strip() if patient_name.strip() else "Unknown Patient",
                         'image': image,
                         'show_attention': show_attention,
                         'include_birads': include_birads
@@ -860,7 +852,7 @@ if uploaded_file is not None:
                             prediction_result=prediction,
                             confidence=float(confidence),
                             test_data={
-                                'patient_name': patient_name or "Unknown Patient",
+                                'patient_name': patient_name.strip() if patient_name.strip() else "Unknown Patient",
                                 'probabilities': {'Benign': float(probabilities[0]), 'Malignant': float(probabilities[1])},
                                 'birads_category': birads[0],
                                 'birads_description': birads[1],
@@ -1039,12 +1031,19 @@ if 'breast_results' in st.session_state:
         """)
     
     # PDF Report Generation
-    st.subheader("📄 Generate Screening Report")
-    col1, col2, col3 = st.columns([1, 1, 1])
+    st.markdown("---")
+    st.markdown("""
+    <div style="text-align: center; padding: 1.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; margin: 2rem 0;">
+        <h3 style="color: white; margin-bottom: 0.5rem;">📋 Generate Screening Report</h3>
+        <p style="color: rgba(255,255,255,0.9); font-size: 0.9rem; margin: 0;">Download comprehensive PDF report with mammography analysis</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    col1, col2, col3 = st.columns([1, 2, 1])
     
     with col2:
-        if st.button("📋 Download PDF Report", type="secondary"):
-            with st.spinner("Generating screening report..."):
+        if st.button("📥 Generate & Download PDF Report", use_container_width=True, type="primary", key="generate_breast_pdf"):
+            with st.spinner("🔎 Generating screening report..."):
                 pdf_bytes = generate_breast_cancer_pdf_report(
                     results['image'],
                     results['prediction'],
@@ -1058,7 +1057,8 @@ if 'breast_results' in st.session_state:
                     label="📥 Download Report",
                     data=pdf_bytes,
                     file_name=f"Breast_Cancer_Report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf",
-                    mime="application/pdf"
+                    mime="application/pdf",
+                    use_container_width=True
                 )
                 st.success("✅ Report generated successfully!")
 
@@ -1124,7 +1124,6 @@ st.markdown("---")
 st.markdown("""
 <div style="text-align: center; color: #7f8c8d; padding: 1rem;">
 <p>🏥 AI Medical Diagnosis System | Breast Cancer Screening Module</p>
-<p>⚠️ For educational and research purposes only. Not a substitute for professional radiological interpretation.</p>
 <p>🎗️ Supporting the fight against breast cancer through AI-assisted early detection</p>
 </div>
 """, unsafe_allow_html=True)

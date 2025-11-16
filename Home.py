@@ -478,7 +478,7 @@ with col1:
         <ul class="feature-list">
             <li>Upload X-rays</li>
             <li>CNN model</li>
-            <li>94% accuracy</li>
+            <li>97% accuracy</li>
         </ul>
     </div>
     """, unsafe_allow_html=True)
@@ -581,7 +581,6 @@ st.markdown("""
 <div class="footer">
     <h3 style="color: #2c3e50; margin-bottom: 1rem;">🩺 MediAI Diagnosis System</h3>
     <p style="margin: 0.5rem 0;">Powered by Advanced Machine Learning & Deep Learning</p>
-    <p style="margin: 0.5rem 0;">⚠️ For educational and research purposes only. Not a substitute for professional medical diagnosis.</p>
     <p style="margin-top: 1.5rem; font-weight: 600;">🔒 Secure • 🎯 Accurate • ⚡ Fast • 🏥 Professional</p>
 </div>
 """, unsafe_allow_html=True)

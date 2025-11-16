@@ -345,7 +345,7 @@ def generate_diabetes_pdf_report(features, feature_names, prediction, confidence
     pdf.set_font('Arial', '', 12)
     pdf.cell(0, 8, f'Patient: {patient_name}', 0, 1)
     pdf.cell(0, 8, f'Assessment Date: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}', 0, 1)
-    pdf.cell(0, 8, f'Assessed by: {st.session_state["name"]}', 0, 1)
+    pdf.cell(0, 8, f'Assessed by: AI Medical Diagnosis System', 0, 1)
     pdf.ln(5)
     
     # Risk Assessment Results
@@ -411,7 +411,7 @@ def generate_diabetes_pdf_report(features, feature_names, prediction, confidence
                          'It should not be used as a substitute for professional medical diagnosis. '
                          'Please consult with qualified healthcare professionals for proper medical evaluation and diabetes management.')
     
-    return pdf.output()
+    return bytes(pdf.output())
 
 # Main page content
 st.title("🩺 Diabetes Risk Assessment")
@@ -469,7 +469,12 @@ if input_method == "Manual Input":
         age = st.number_input("Age (years)", min_value=18, max_value=100, value=30, help="Patient age in years")
     
     # Patient identification
-    patient_name = st.text_input("Patient ID/Name (Optional)", placeholder="Enter patient identifier")
+    if auth.is_authenticated():
+        user_info = auth.get_current_user()
+        default_name = user_info.get('full_name', user_info.get('name', 'User'))
+        patient_name = st.text_input("Patient Name (You)", placeholder="Your full name", value=default_name, key="diabetes_patient_name", disabled=True)
+    else:
+        patient_name = st.text_input("Patient Name", placeholder="Enter your name", value="Guest User", key="diabetes_patient_name")
     
     # Collect features
     features = [pregnancies, glucose, blood_pressure, skin_thickness, insulin, bmi, diabetes_pedigree, age]
@@ -489,7 +494,7 @@ if input_method == "Manual Input":
                 'prediction': prediction,
                 'confidence': confidence,
                 'probabilities': probabilities,
-                'patient_name': patient_name or "Unknown Patient"
+                'patient_name': patient_name.strip() if patient_name.strip() else "Unknown Patient"
             }
             
             # Save to database
@@ -701,12 +706,19 @@ if 'diabetes_results' in st.session_state:
         """)
     
         # PDF Report Generation
-        st.subheader("📄 Generate Assessment Report")
-        col1, col2, col3 = st.columns([1, 1, 1])
+        st.markdown("---")
+        st.markdown("""
+        <div style="text-align: center; padding: 1.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; margin: 2rem 0;">
+            <h3 style="color: white; margin-bottom: 0.5rem;">📋 Generate Assessment Report</h3>
+            <p style="color: rgba(255,255,255,0.9); font-size: 0.9rem; margin: 0;">Download comprehensive PDF report with risk analysis</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        col1, col2, col3 = st.columns([1, 2, 1])
         
         with col2:
-            if st.button("📋 Download PDF Report", type="secondary"):
-                with st.spinner("Generating assessment report..."):
+            if st.button("📥 Generate & Download PDF Report", use_container_width=True, type="primary", key="generate_diabetes_pdf"):
+                with st.spinner("🔎 Generating assessment report..."):
                     pdf_bytes = generate_diabetes_pdf_report(
                         results['features'],
                         results['feature_names'],
@@ -720,7 +732,8 @@ if 'diabetes_results' in st.session_state:
                         label="📥 Download Report",
                         data=pdf_bytes,
                         file_name=f"Diabetes_Report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf",
-                        mime="application/pdf"
+                        mime="application/pdf",
+                        use_container_width=True
                     )
                     st.success("✅ Report generated successfully!")# Model Information
 st.markdown("---")
@@ -762,7 +775,6 @@ with st.expander("🤖 Model Information & Technical Details"):
     st.markdown("""
     <div style="text-align: center; color: #7f8c8d; padding: 1rem;">
     <p>🏥 AI Medical Diagnosis System | Diabetes Risk Assessment Module</p>
-    <p>⚠️ For educational and research purposes only. Not a substitute for professional medical diagnosis.</p>
     </div>
     """, unsafe_allow_html=True)
 

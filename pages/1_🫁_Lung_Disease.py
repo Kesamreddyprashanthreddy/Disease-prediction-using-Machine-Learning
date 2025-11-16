@@ -454,60 +454,6 @@ def create_probability_chart(probabilities):
     return fig
 
 def generate_pdf_report(image, prediction, confidence, probabilities, patient_name="Unknown"):
-    """Generate simple PDF report for lung disease analysis."""
-    from fpdf import FPDF
-    import io
-    
-    class PDF(FPDF):
-        def header(self):
-            self.set_font('Arial', 'B', 16)
-            self.cell(0, 10, 'LUNG DISEASE ANALYSIS REPORT', 0, 1, 'C')
-            self.ln(10)
-        
-        def footer(self):
-            self.set_y(-15)
-            self.set_font('Arial', 'I', 8)
-            self.cell(0, 10, f'Page {self.page_no()}', 0, 0, 'C')
-    
-    pdf = PDF()
-    pdf.add_page()
-    
-    # Patient Info
-    pdf.set_font('Arial', 'B', 12)
-    pdf.cell(0, 10, 'PATIENT INFORMATION', 0, 1)
-    pdf.set_font('Arial', '', 10)
-    pdf.cell(0, 8, f'Patient Name: {patient_name}', 0, 1)
-    pdf.cell(0, 8, f'Date: {datetime.now().strftime("%Y-%m-%d %H:%M")}', 0, 1)
-    pdf.ln(5)
-    
-    # Results
-    pdf.set_font('Arial', 'B', 12)
-    pdf.cell(0, 10, 'ANALYSIS RESULTS', 0, 1)
-    pdf.set_font('Arial', '', 10)
-    pdf.cell(0, 8, f'Diagnosis: {prediction}', 0, 1)
-    pdf.cell(0, 8, f'Confidence: {confidence:.1%}', 0, 1)
-    pdf.ln(5)
-    
-    # Probabilities
-    pdf.set_font('Arial', 'B', 12)
-    pdf.cell(0, 10, 'PROBABILITY DISTRIBUTION', 0, 1)
-    pdf.set_font('Arial', '', 10)
-    for class_name, prob in probabilities.items():
-        pdf.cell(0, 8, f'{class_name}: {prob:.2%}', 0, 1)
-    pdf.ln(5)
-    
-    # Recommendations
-    pdf.set_font('Arial', 'B', 12)
-    pdf.cell(0, 10, 'RECOMMENDATIONS', 0, 1)
-    pdf.set_font('Arial', '', 10)
-    if prediction == 'Normal':
-        pdf.multi_cell(0, 6, 'Continue routine health monitoring. No immediate action required.')
-    elif prediction == 'Pneumonia':
-        pdf.multi_cell(0, 6, 'Immediate medical evaluation recommended. Consider antibiotic therapy.')
-    else:
-        pdf.multi_cell(0, 6, 'URGENT: Consult infectious disease specialist immediately.')
-    
-    return bytes(pdf.output())
     """Generate professional hospital-style PDF report for lung disease analysis."""
     class LungDiseaseReport(FPDF):
         def header(self):
@@ -571,11 +517,7 @@ def generate_pdf_report(image, prediction, confidence, probabilities, patient_na
     pdf.set_font('Arial', '', 11)
     pdf.cell(50, 7, 'Referring Physician:', 0, 0)
     pdf.set_font('Arial', 'B', 11)
-    if auth.is_authenticated():
-        user_info = auth.get_current_user()
-        pdf.cell(0, 7, f'Dr. {user_info["full_name"]}', 0, 1)
-    else:
-        pdf.cell(0, 7, 'Self-Referral / Guest Access', 0, 1)
+    pdf.cell(0, 7, 'AI Medical Diagnosis System', 0, 1)
     
     pdf.ln(5)
     
@@ -768,15 +710,11 @@ def generate_pdf_report(image, prediction, confidence, probabilities, patient_na
     pdf.cell(95, 7, 'Date & Time:', 0, 1)
     
     pdf.set_font('Arial', '', 10)
-    if auth.is_authenticated():
-        user_info = auth.get_current_user()
-        pdf.cell(95, 7, f'AI System / Dr. {user_info["full_name"]}', 0, 0)
-    else:
-        pdf.cell(95, 7, 'AI Diagnostic System / Guest User', 0, 0)
+    pdf.cell(95, 7, 'AI Medical Diagnosis System', 0, 0)
     
     pdf.cell(95, 7, datetime.now().strftime("%B %d, %Y - %I:%M %p"), 0, 1)
     
-    return pdf.output()
+    return bytes(pdf.output())
 
 # Main page content
 # Professional header
@@ -844,9 +782,10 @@ if uploaded_file is not None:
         # Patient name input
         if auth.is_authenticated():
             user_info = auth.get_current_user()
-            patient_name = st.text_input("Patient ID/Name (Optional)", placeholder="Enter patient identifier", value=user_info['full_name'])
+            default_name = user_info.get('full_name', user_info.get('name', 'User'))
+            patient_name = st.text_input("Patient Name (You)", placeholder="Your full name", value=default_name, key="lung_patient_name", disabled=True)
         else:
-            patient_name = st.text_input("Patient ID/Name (Optional)", placeholder="Enter patient identifier", value="Guest User")
+            patient_name = st.text_input("Patient Name", placeholder="Enter your name", value="Guest User", key="lung_patient_name")
         
         st.write("")
         # Analysis button
@@ -865,7 +804,7 @@ if uploaded_file is not None:
                         'prediction': prediction,
                         'confidence': confidence,
                         'probabilities': probabilities,
-                        'patient_name': patient_name or "Unknown Patient",
+                        'patient_name': patient_name.strip() if patient_name.strip() else "Unknown Patient",
                         'image': image
                     }
                     
@@ -1070,12 +1009,19 @@ if 'lung_results' in st.session_state:
                 """)
         
         # PDF Report Generation
-        st.subheader("📄 Generate Medical Report")
-        col1, col2, col3 = st.columns([1, 1, 1])
+        st.markdown("---")
+        st.markdown("""
+        <div style="text-align: center; padding: 1.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; margin: 2rem 0;">
+            <h3 style="color: white; margin-bottom: 0.5rem;">📋 Generate Medical Report</h3>
+            <p style="color: rgba(255,255,255,0.9); font-size: 0.9rem; margin: 0;">Download comprehensive PDF report with analysis details</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        col1, col2, col3 = st.columns([1, 2, 1])
         
         with col2:
-            if st.button("📋 Download PDF Report", type="secondary"):
-                with st.spinner("Generating medical report..."):
+            if st.button("📥 Generate & Download PDF Report", use_container_width=True, type="primary", key="generate_lung_pdf"):
+                with st.spinner("🔎 Generating professional medical report..."):
                     pdf_bytes = generate_pdf_report(
                         results['image'],
                         results['prediction'],
@@ -1088,7 +1034,8 @@ if 'lung_results' in st.session_state:
                         label="📥 Download Report",
                         data=pdf_bytes,
                         file_name=f"Lung_Report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf",
-                        mime="application/pdf"
+                        mime="application/pdf",
+                        use_container_width=True
                     )
                     st.success("✅ Report generated successfully!")
 
@@ -1130,6 +1077,5 @@ st.markdown("---")
 st.markdown("""
 <div style="text-align: center; color: #7f8c8d; padding: 1rem;">
 <p>🏥 AI Medical Diagnosis System | Lung Disease Detection Module</p>
-<p>⚠️ For educational and research purposes only. Not a substitute for professional medical diagnosis.</p>
 </div>
 """, unsafe_allow_html=True)
