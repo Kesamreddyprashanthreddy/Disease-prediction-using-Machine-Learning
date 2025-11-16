@@ -204,8 +204,6 @@ def load_breast_cancer_model():
     
     for model_path in possible_paths:
         if os.path.exists(model_path):
-            st.info(f"🔍 Found model at: {model_path}")
-            
             # Method 1: Build model architecture and load weights (MOST RELIABLE)
             try:
                 # Build model with 150x150 input (standard for breast cancer mammograms)
@@ -230,24 +228,18 @@ def load_breast_cancer_model():
                     loss='categorical_crossentropy',
                     metrics=['accuracy']
                 )
-                st.success(f"✅ Model loaded successfully from {os.path.basename(model_path)}")
                 return model, True
             except Exception as e1:
-                st.warning(f"⚠️ Method 1 failed: {str(e1)[:150]}")
-                
                 # Method 2: Try loading directly (may work in some TF versions)
                 try:
-                    with st.spinner("Trying alternative loading method..."):
-                        model = tf.keras.models.load_model(model_path, compile=False)
-                        model.compile(
-                            optimizer='adam',
-                            loss='categorical_crossentropy',
-                            metrics=['accuracy']
-                        )
-                    st.success(f"✅ Model loaded successfully")
+                    model = tf.keras.models.load_model(model_path, compile=False)
+                    model.compile(
+                        optimizer='adam',
+                        loss='categorical_crossentropy',
+                        metrics=['accuracy']
+                    )
                     return model, True
                 except Exception as e2:
-                    st.warning(f"⚠️ Method 2 failed: {str(e2)[:150]}")
                     continue
     
     st.warning("⚠️ Breast cancer model file not found in any expected location. Using demo mode.")
