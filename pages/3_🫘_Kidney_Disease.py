@@ -141,6 +141,13 @@ st.markdown("""
 @st.cache_resource
 def load_kidney_model():
     """Load the kidney disease prediction model."""
+    # Add NumPy compatibility for models saved with NumPy 2.0
+    import sys
+    if not hasattr(np, '_core'):
+        np._core = np.core
+    sys.modules['numpy._core'] = np.core
+    sys.modules['numpy._core.multiarray'] = np.core.multiarray
+    
     # Try multiple possible paths for the model (for different deployment environments)
     possible_paths = [
         "saved_models/kidney_model.joblib",
@@ -158,9 +165,8 @@ def load_kidney_model():
             try:
                 model = joblib.load(model_path)
                 return model, True
-            except Exception as e:
-                st.warning(f"❌ Failed to load model from {model_path}: {str(e)}")
-                continue
+            except:
+                pass
     
     st.warning("⚠️ Kidney disease model file not found in any expected location. Using demo mode.")
     st.info("🔬 Running in demonstration mode with simulated Random Forest classifier.")

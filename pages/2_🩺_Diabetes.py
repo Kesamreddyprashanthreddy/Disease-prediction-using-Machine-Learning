@@ -171,6 +171,13 @@ def load_diabetes_model():
     model_loaded = False
     scaler_loaded = False
     
+    # Add NumPy compatibility for models saved with NumPy 2.0
+    import sys
+    if not hasattr(np, '_core'):
+        np._core = np.core
+    sys.modules['numpy._core'] = np.core
+    sys.modules['numpy._core.multiarray'] = np.core.multiarray
+    
     # Try to load model
     for model_path in possible_model_paths:
         if os.path.exists(model_path):
@@ -178,8 +185,8 @@ def load_diabetes_model():
                 model = joblib.load(model_path)
                 model_loaded = True
                 break
-            except Exception as e:
-                st.warning(f"Could not load model from {model_path}: {str(e)}")
+            except:
+                pass
     
     # Try to load scaler
     for scaler_path in possible_scaler_paths:
@@ -188,8 +195,8 @@ def load_diabetes_model():
                 scaler = joblib.load(scaler_path)
                 scaler_loaded = True
                 break
-            except Exception as e:
-                st.warning(f"Could not load scaler from {scaler_path}: {str(e)}")
+            except:
+                pass
     
     if not model_loaded or not scaler_loaded:
         st.warning("⚠️ Could not load trained models. Running in demonstration mode.")
