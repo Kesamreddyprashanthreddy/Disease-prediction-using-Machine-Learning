@@ -21,10 +21,16 @@ from sklearn.preprocessing import StandardScaler
 import io
 
 # Add parent directory to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+current_file = Path(__file__).parent.absolute()
+parent_dir = current_file.parent
+sys.path.insert(0, str(parent_dir))
 
-from database import get_prediction_operations
-from auth import auth
+try:
+    from src.database import get_prediction_operations
+    from src.auth import auth
+except ImportError:
+    from database import get_prediction_operations
+    from auth import auth
 
 # Page configuration
 st.set_page_config(page_title="Kidney Disease Analysis", layout="wide")

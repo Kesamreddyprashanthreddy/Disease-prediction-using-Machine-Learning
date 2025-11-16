@@ -20,10 +20,16 @@ import io
 import base64
 
 # Add parent directory to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+current_file = Path(__file__).parent.absolute()
+parent_dir = current_file.parent
+sys.path.insert(0, str(parent_dir))
 
-from auth import auth
-from database import get_prediction_operations
+try:
+    from src.auth import auth
+    from src.database import get_prediction_operations
+except ImportError:
+    from auth import auth
+    from database import get_prediction_operations
 
 # Page configuration
 st.set_page_config(page_title="Lung Disease Detection", layout="wide")
