@@ -1,5 +1,6 @@
 # Core Framework
 streamlit==1.48.1
+gradio==4.44.0
 
 # Machine Learning & Data Science
 tensorflow==2.15.0
