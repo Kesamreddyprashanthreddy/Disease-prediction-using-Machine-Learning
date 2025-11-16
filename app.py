@@ -8,10 +8,6 @@ import os
 # Get port from environment (Render provides this)
 port = os.environ.get("PORT", "10000")
 
-# Ensure we're in the correct directory
-project_root = os.path.dirname(os.path.abspath(__file__))
-os.chdir(project_root)
-
 # Launch Streamlit app
 if __name__ == "__main__":
     subprocess.run([

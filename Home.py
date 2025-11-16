@@ -6,30 +6,12 @@ Multi-Disease Prediction System with Real-Time Authentication
 
 import streamlit as st
 import sys
-import os
 from pathlib import Path
 
-# Add src directory to path - robust for all environments
-current_dir = Path(__file__).parent.absolute()
-src_dir = current_dir / "src"
+# Add src directory to path
+sys.path.insert(0, str(Path(__file__).parent / "src"))
 
-# Try multiple path configurations
-if src_dir.exists():
-    sys.path.insert(0, str(src_dir))
-if str(current_dir) not in sys.path:
-    sys.path.insert(0, str(current_dir))
-
-# Import with error handling
-try:
-    from src.auth import auth
-except ImportError:
-    try:
-        from auth import auth
-    except ImportError as e:
-        st.error(f"Failed to import auth module: {e}")
-        st.error(f"Current directory: {os.getcwd()}")
-        st.error(f"Python path: {sys.path}")
-        st.stop()
+from auth import auth
 
 # Page configuration
 st.set_page_config(
@@ -44,15 +26,7 @@ st.markdown("""
     <style>
     /* Main container styling */
     .main {
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%) !important;
-    }
-    
-    .stApp {
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%) !important;
-    }
-    
-    [data-testid="stAppViewContainer"] {
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%) !important;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
     }
     
     .top-nav h1 {

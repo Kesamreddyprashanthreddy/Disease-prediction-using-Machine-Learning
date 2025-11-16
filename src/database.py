@@ -4,10 +4,23 @@ Supports MongoDB, PostgreSQL, and MySQL
 """
 import os
 from dotenv import load_dotenv
-from pymongo import MongoClient
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text, Float
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+
+# Try importing database drivers
+try:
+    from pymongo import MongoClient
+    PYMONGO_AVAILABLE = True
+except ImportError:
+    PYMONGO_AVAILABLE = False
+    MongoClient = None
+
+try:
+    from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text, Float
+    from sqlalchemy.ext.declarative import declarative_base
+    from sqlalchemy.orm import sessionmaker
+    SQLALCHEMY_AVAILABLE = True
+except ImportError:
+    SQLALCHEMY_AVAILABLE = False
+
 from datetime import datetime
 import json
 
@@ -16,7 +29,10 @@ load_dotenv(override=True)
 
 DATABASE_URL = os.getenv('DATABASE_URL')
 
-Base = declarative_base()
+if SQLALCHEMY_AVAILABLE:
+    Base = declarative_base()
+else:
+    Base = None
 
 
 class User(Base):
@@ -84,6 +100,9 @@ class DatabaseConnection:
     
     def _connect_mongodb(self):
         """Connect to MongoDB"""
+        if not PYMONGO_AVAILABLE:
+            raise ImportError("pymongo is not installed. Install it with: pip install pymongo")
+        
         try:
             client = MongoClient(self.db_url)
             # Test connection

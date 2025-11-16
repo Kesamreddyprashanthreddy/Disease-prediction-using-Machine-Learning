@@ -20,34 +20,10 @@ import io
 import base64
 
 # Add parent directory to path
-import importlib.util
-current_file = Path(__file__).parent.absolute()
-parent_dir = current_file.parent
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
-# Add both possible paths
-sys.path.insert(0, str(parent_dir))
-sys.path.insert(0, str(parent_dir.parent))
-
-# Flexible import
-if importlib.util.find_spec("src.database"):
-    from src.database import get_prediction_operations
-    from src.auth import auth
-elif importlib.util.find_spec("database"):
-    from database import get_prediction_operations
-    from auth import auth
-else:
-    auth_path = parent_dir / "auth.py"
-    database_path = parent_dir / "database.py"
-    
-    spec = importlib.util.spec_from_file_location("auth", auth_path)
-    auth_module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(auth_module)
-    auth = auth_module.auth
-    
-    spec = importlib.util.spec_from_file_location("database", database_path)
-    database_module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(database_module)
-    get_prediction_operations = database_module.get_prediction_operations
+from database import get_prediction_operations
+from auth import auth
 
 # Page configuration
 st.set_page_config(page_title="Breast Cancer Screening", layout="wide")
@@ -455,7 +431,7 @@ def generate_breast_cancer_pdf_report(image, prediction, confidence, probabiliti
     else:
         pdf.multi_cell(0, 6, 'Benign findings. Continue routine screening as per guidelines.')
     
-    return pdf.output(dest='S').encode('latin-1')
+    return bytes(pdf.output())
     class BreastCancerReport(FPDF):
         def header(self):
             # Header with medical center branding
@@ -761,7 +737,7 @@ def generate_breast_cancer_pdf_report(image, prediction, confidence, probabiliti
     
     pdf.cell(95, 7, datetime.now().strftime("%B %d, %Y - %I:%M %p"), 0, 1)
     
-    return pdf.output(dest='S').encode('latin-1')
+    return pdf.output()
     pdf.ln(3)
     
     # Important Disclaimer

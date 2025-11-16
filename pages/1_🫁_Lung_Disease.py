@@ -714,7 +714,7 @@ def generate_pdf_report(image, prediction, confidence, probabilities, patient_na
     
     pdf.cell(95, 7, datetime.now().strftime("%B %d, %Y - %I:%M %p"), 0, 1)
     
-    return pdf.output(dest='S').encode('latin-1')
+    return bytes(pdf.output())
 
 # Main page content
 # Professional header

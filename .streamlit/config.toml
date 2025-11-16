@@ -1,14 +1,8 @@
 [server]
+address = "localhost"
+port = 8501
 headless = true
-port = 8502
-enableCORS = false
-enableXsrfProtection = false
-baseUrlPath = ""
 
 [browser]
-gatherUsageStats = false
-serverAddress = "0.0.0.0"
-
-[client]
-showErrorDetails = true
-toolbarMode = "minimal"
+serverAddress = "localhost"
+serverPort = 8501
