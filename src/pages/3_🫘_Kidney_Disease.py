@@ -344,7 +344,7 @@ def generate_kidney_pdf_report(features, feature_names, prediction, confidence, 
     else:
         pdf.multi_cell(0, 6, 'Normal kidney function. Continue healthy lifestyle and regular monitoring.')
     
-    return bytes(pdf.output())
+    return pdf.output(dest='S').encode('latin-1')
     
     class KidneyReport(FPDF):
         def header(self):

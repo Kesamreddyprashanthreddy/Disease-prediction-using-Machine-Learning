@@ -509,7 +509,7 @@ def generate_pdf_report(image, prediction, confidence, probabilities, patient_na
     else:
         pdf.multi_cell(0, 6, 'URGENT: Consult infectious disease specialist immediately.')
     
-    return bytes(pdf.output())
+    return pdf.output(dest='S').encode('latin-1')
     """Generate professional hospital-style PDF report for lung disease analysis."""
     class LungDiseaseReport(FPDF):
         def header(self):
