@@ -1,4 +1,17 @@
-# 🩺 AI-Powered Medical Diagnosis System
+# 🏥 AI Medical Diagnosis System
+
+---
+title: AI Medical Diagnosis System
+emoji: 🏥
+colorFrom: blue
+colorTo: purple
+sdk: streamlit
+sdk_version: 1.48.1
+app_file: Home.py
+pinned: false
+license: mit
+python_version: "3.10"
+---
 
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue)](https://www.python.org/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.48.1-red)](https://streamlit.io/)

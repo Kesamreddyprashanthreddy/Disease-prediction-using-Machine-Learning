@@ -1,0 +1,21 @@
+📁 .streamlit/
+   └── config.toml
+📁 saved_models/
+   ├── lung_disease_model.h5
+   ├── diabetes_model.joblib
+   ├── diabetes_scaler.joblib
+   ├── kidney_model.joblib
+   ├── kidney_scaler.joblib
+   └── breast_cancer_image_model_improved.h5
+📁 pages/
+   ├── 1_🫁_Lung_Disease.py
+   ├── 2_🩺_Diabetes.py
+   ├── 3_🫘_Kidney_Disease.py
+   ├── 4_🎗️_Breast_Cancer.py
+   └── 5_📊_Prediction_History.py
+📁 src/
+   ├── auth.py
+   ├── database.py
+   └── utils.py
+📄 Home.py (main entry point)
+📄 requirements.txt
