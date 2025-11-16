@@ -4,23 +4,10 @@ Supports MongoDB, PostgreSQL, and MySQL
 """
 import os
 from dotenv import load_dotenv
-
-# Try importing database drivers
-try:
-    from pymongo import MongoClient
-    PYMONGO_AVAILABLE = True
-except ImportError:
-    PYMONGO_AVAILABLE = False
-    MongoClient = None
-
-try:
-    from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text, Float
-    from sqlalchemy.ext.declarative import declarative_base
-    from sqlalchemy.orm import sessionmaker
-    SQLALCHEMY_AVAILABLE = True
-except ImportError:
-    SQLALCHEMY_AVAILABLE = False
-
+from pymongo import MongoClient
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text, Float
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 from datetime import datetime
 import json
 
@@ -29,10 +16,10 @@ load_dotenv(override=True)
 
 DATABASE_URL = os.getenv('DATABASE_URL')
 
-if SQLALCHEMY_AVAILABLE:
-    Base = declarative_base()
-else:
-    Base = None
+# Debug: Print database URL (remove in production)
+print(f"🔍 DATABASE_URL loaded: {DATABASE_URL[:50] if DATABASE_URL else 'None'}...")
+
+Base = declarative_base()
 
 
 class User(Base):
@@ -71,22 +58,22 @@ class DatabaseConnection:
         
     def _detect_db_type(self):
         """Detect database type from URL"""
-        print(f"[DB] Detecting database type from URL: {self.db_url[:50] if self.db_url else 'None'}...")
+        print(f"🔍 Detecting database type from URL: {self.db_url[:50] if self.db_url else 'None'}...")
         
         if not self.db_url or self.db_url == 'your_database_url_here':
             raise ValueError("DATABASE_URL not configured in .env file. Please add your MongoDB connection string.")
         
         if self.db_url.startswith('mongodb'):
-            print("[DB] Detected MongoDB")
+            print("✅ Detected MongoDB")
             return 'mongodb'
         elif self.db_url.startswith('postgresql'):
-            print("[DB] Detected PostgreSQL")
+            print("✅ Detected PostgreSQL")
             return 'postgresql'
         elif self.db_url.startswith('mysql'):
-            print("[DB] Detected MySQL")
+            print("✅ Detected MySQL")
             return 'mysql'
         elif self.db_url.startswith('sqlite'):
-            print("[DB] Detected SQLite")
+            print("✅ Detected SQLite")
             return 'sqlite'
         else:
             raise ValueError(f"Unsupported database type. URL must start with: mongodb, postgresql, mysql, or sqlite. Got: {self.db_url[:20]}")
@@ -100,19 +87,16 @@ class DatabaseConnection:
     
     def _connect_mongodb(self):
         """Connect to MongoDB"""
-        if not PYMONGO_AVAILABLE:
-            raise ImportError("pymongo is not installed. Install it with: pip install pymongo")
-        
         try:
             client = MongoClient(self.db_url)
             # Test connection
             client.server_info()
             db_name = self.db_url.split('/')[-1].split('?')[0]
             self.connection = client[db_name]
-            print(f"[DB] Connected to MongoDB database: {db_name}")
+            print(f"✓ Connected to MongoDB database: {db_name}")
             return self.connection
         except Exception as e:
-            print(f"[DB] MongoDB connection error: {e}")
+            print(f"✗ MongoDB connection error: {e}")
             raise
     
     def _connect_sql(self):
@@ -123,10 +107,10 @@ class DatabaseConnection:
             Base.metadata.create_all(engine)
             Session = sessionmaker(bind=engine)
             self.connection = Session()
-            print(f"[DB] Connected to {self.db_type.upper()} database")
+            print(f"✓ Connected to {self.db_type.upper()} database")
             return self.connection
         except Exception as e:
-            print(f"[DB] {self.db_type.upper()} connection error: {e}")
+            print(f"✗ {self.db_type.upper()} connection error: {e}")
             raise
     
     def get_connection(self):
@@ -142,7 +126,7 @@ class DatabaseConnection:
                 self.connection.client.close()
             else:
                 self.connection.close()
-            print("[DB] Database connection closed")
+            print("✓ Database connection closed")
 
 
 # MongoDB user operations

@@ -135,18 +135,29 @@ st.markdown("""
 @st.cache_resource
 def load_diabetes_model():
     """Load the diabetes prediction model and scaler."""
-    # Try multiple possible paths
+    # Try multiple possible paths for different deployment environments
     possible_model_paths = [
         "saved_models/diabetes_model_optimized.joblib",
-        "../saved_models/diabetes_model_optimized.joblib", 
         "saved_models/diabetes_model.joblib",
-        "../saved_models/diabetes_model.joblib"
+        "../saved_models/diabetes_model_optimized.joblib", 
+        "../saved_models/diabetes_model.joblib",
+        "../../saved_models/diabetes_model_optimized.joblib",
+        "../../saved_models/diabetes_model.joblib",
+        os.path.join(os.getcwd(), "saved_models", "diabetes_model_optimized.joblib"),
+        os.path.join(os.getcwd(), "saved_models", "diabetes_model.joblib"),
+        os.path.join(os.path.dirname(__file__), "..", "saved_models", "diabetes_model_optimized.joblib"),
+        os.path.join(os.path.dirname(__file__), "..", "saved_models", "diabetes_model.joblib"),
+        "/app/saved_models/diabetes_model_optimized.joblib",
+        "/app/saved_models/diabetes_model.joblib"
     ]
     
     possible_scaler_paths = [
         "saved_models/diabetes_scaler.joblib",
         "../saved_models/diabetes_scaler.joblib",
-        "saved_models/diabetes_scaler.joblib" 
+        "../../saved_models/diabetes_scaler.joblib",
+        os.path.join(os.getcwd(), "saved_models", "diabetes_scaler.joblib"),
+        os.path.join(os.path.dirname(__file__), "..", "saved_models", "diabetes_scaler.joblib"),
+        "/app/saved_models/diabetes_scaler.joblib"
     ]
     
     model = None
@@ -271,145 +282,240 @@ def create_risk_factors_chart(features, feature_names):
     return fig
 
 def generate_diabetes_pdf_report(features, feature_names, prediction, confidence, probabilities, patient_name="Unknown"):
-    """Generate simple PDF report for diabetes risk assessment."""
+    """Generate professional hospital-style PDF report for diabetes risk assessment."""
     from fpdf import FPDF
-    
-    class PDF(FPDF):
-        def header(self):
-            self.set_font('Arial', 'B', 16)
-            self.cell(0, 10, 'DIABETES RISK ASSESSMENT REPORT', 0, 1, 'C')
-            self.ln(10)
-        
-        def footer(self):
-            self.set_y(-15)
-            self.set_font('Arial', 'I', 8)
-            self.cell(0, 10, f'Page {self.page_no()}', 0, 0, 'C')
-    
-    pdf = PDF()
-    pdf.add_page()
-    
-    # Patient Info
-    pdf.set_font('Arial', 'B', 12)
-    pdf.cell(0, 10, 'PATIENT INFORMATION', 0, 1)
-    pdf.set_font('Arial', '', 10)
-    pdf.cell(0, 8, f'Patient Name: {patient_name}', 0, 1)
-    pdf.cell(0, 8, f'Date: {datetime.now().strftime("%Y-%m-%d %H:%M")}', 0, 1)
-    pdf.ln(5)
-    
-    # Risk Assessment
-    pdf.set_font('Arial', 'B', 12)
-    pdf.cell(0, 10, 'RISK ASSESSMENT', 0, 1)
-    pdf.set_font('Arial', '', 10)
-    risk_level = 'High Risk' if prediction == 1 else 'Low Risk'
-    pdf.cell(0, 8, f'Risk Level: {risk_level}', 0, 1)
-    pdf.cell(0, 8, f'Confidence: {confidence:.1%}', 0, 1)
-    pdf.ln(5)
-    
-    # Key Features
-    pdf.set_font('Arial', 'B', 12)
-    pdf.cell(0, 10, 'KEY HEALTH INDICATORS', 0, 1)
-    pdf.set_font('Arial', '', 10)
-    for i, (feature, value) in enumerate(zip(feature_names[:5], features[:5])):
-        pdf.cell(0, 8, f'{feature}: {value:.2f}', 0, 1)
-    
-    pdf.ln(5)
-    
-    # Recommendations
-    pdf.set_font('Arial', 'B', 12)
-    pdf.cell(0, 10, 'RECOMMENDATIONS', 0, 1)
-    pdf.set_font('Arial', '', 10)
-    if prediction == 1:
-        pdf.multi_cell(0, 6, 'High diabetes risk detected. Consult healthcare provider for further evaluation.')
-    else:
-        pdf.multi_cell(0, 6, 'Low diabetes risk. Maintain healthy lifestyle and regular checkups.')
-    
-    return bytes(pdf.output())
     
     class DiabetesReport(FPDF):
         def header(self):
-            self.set_font('Arial', 'B', 16)
-            self.cell(0, 10, 'AI Medical Diagnosis System - Diabetes Risk Assessment Report', 0, 1, 'C')
+            # Header with medical center branding
+            self.set_fill_color(52, 152, 219)  # Professional blue
+            self.rect(0, 0, 210, 35, 'F')
+            
+            self.set_text_color(255, 255, 255)
+            self.set_font('Arial', 'B', 20)
+            self.cell(0, 15, 'AI MEDICAL DIAGNOSTICS CENTER', 0, 1, 'C')
+            
+            self.set_font('Arial', '', 10)
+            self.cell(0, 5, 'Department of Endocrinology & Metabolic Health', 0, 1, 'C')
+            self.cell(0, 5, 'Advanced AI-Powered Diagnostic Services', 0, 1, 'C')
+            
+            self.set_text_color(0, 0, 0)
             self.ln(10)
         
         def footer(self):
-            self.set_y(-15)
+            self.set_y(-20)
             self.set_font('Arial', 'I', 8)
-            self.cell(0, 10, f'Generated on {datetime.now().strftime("%Y-%m-%d %H:%M:%S")} | Page {self.page_no()}', 0, 0, 'C')
+            self.set_text_color(128, 128, 128)
+            self.cell(0, 5, f'Report Generated: {datetime.now().strftime("%B %d, %Y at %I:%M %p")}', 0, 1, 'C')
+            self.cell(0, 5, f'Page {self.page_no()} | Confidential Medical Report', 0, 0, 'C')
     
     pdf = DiabetesReport()
     pdf.add_page()
     
-    # Patient Information
-    pdf.set_font('Arial', 'B', 14)
-    pdf.cell(0, 10, 'Patient Information', 0, 1)
-    pdf.set_font('Arial', '', 12)
-    pdf.cell(0, 8, f'Patient: {patient_name}', 0, 1)
-    pdf.cell(0, 8, f'Assessment Date: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}', 0, 1)
-    pdf.cell(0, 8, f'Assessed by: AI Medical Diagnosis System', 0, 1)
+    # Report Title
+    pdf.set_font('Arial', 'B', 16)
+    pdf.set_fill_color(240, 240, 240)
+    pdf.cell(0, 10, 'DIABETES RISK ASSESSMENT REPORT', 0, 1, 'C', True)
+    pdf.ln(5)
+    
+    # Patient Demographics Section
+    pdf.set_font('Arial', 'B', 13)
+    pdf.set_fill_color(220, 237, 246)
+    pdf.cell(0, 8, 'PATIENT INFORMATION', 0, 1, 'L', True)
+    pdf.ln(2)
+    
+    pdf.set_font('Arial', '', 11)
+    pdf.cell(50, 7, 'Patient Name:', 0, 0)
+    pdf.set_font('Arial', 'B', 11)
+    pdf.cell(0, 7, patient_name, 0, 1)
+    
+    pdf.set_font('Arial', '', 11)
+    pdf.cell(50, 7, 'Patient ID:', 0, 0)
+    pdf.set_font('Arial', 'B', 11)
+    pdf.cell(0, 7, f'DM-{datetime.now().strftime("%Y%m%d%H%M")}', 0, 1)
+    
+    pdf.set_font('Arial', '', 11)
+    pdf.cell(50, 7, 'Assessment Date:', 0, 0)
+    pdf.set_font('Arial', 'B', 11)
+    pdf.cell(0, 7, datetime.now().strftime("%B %d, %Y"), 0, 1)
+    
+    pdf.set_font('Arial', '', 11)
+    pdf.cell(50, 7, 'Assessed By:', 0, 0)
+    pdf.set_font('Arial', 'B', 11)
+    pdf.cell(0, 7, 'AI Medical Diagnosis System', 0, 1)
+    
+    pdf.ln(5)
+    
+    # Clinical Parameters
+    pdf.set_font('Arial', 'B', 13)
+    pdf.set_fill_color(220, 237, 246)
+    pdf.cell(0, 8, 'CLINICAL PARAMETERS', 0, 1, 'L', True)
+    pdf.ln(2)
+    
+    pdf.set_font('Arial', '', 10)
+    # Display all features in two columns
+    for i in range(0, len(features), 2):
+        pdf.cell(95, 6, f'{feature_names[i]}: {features[i]:.2f}', 1, 0, 'L')
+        if i+1 < len(features):
+            pdf.cell(95, 6, f'{feature_names[i+1]}: {features[i+1]:.2f}', 1, 1, 'L')
+        else:
+            pdf.cell(95, 6, '', 1, 1, 'L')
+    
     pdf.ln(5)
     
     # Risk Assessment Results
-    pdf.set_font('Arial', 'B', 14)
-    pdf.cell(0, 10, 'Risk Assessment Results', 0, 1)
-    pdf.set_font('Arial', '', 12)
-    risk_text = "High Risk" if prediction == 1 else "Low Risk"
-    pdf.cell(0, 8, f'Diabetes Risk Level: {risk_text}', 0, 1)
-    pdf.cell(0, 8, f'Confidence Score: {confidence:.1%}', 0, 1)
-    pdf.cell(0, 8, f'Low Risk Probability: {probabilities[0]:.1%}', 0, 1)
-    pdf.cell(0, 8, f'High Risk Probability: {probabilities[1]:.1%}', 0, 1)
+    pdf.set_font('Arial', 'B', 13)
+    pdf.set_fill_color(220, 237, 246)
+    pdf.cell(0, 8, 'RISK ASSESSMENT RESULTS', 0, 1, 'L', True)
+    pdf.ln(2)
+    
+    # Risk Level with color coding
+    pdf.set_font('Arial', 'B', 12)
+    pdf.cell(50, 7, 'Risk Level:', 0, 0)
+    
+    if prediction == 1:  # High risk
+        pdf.set_text_color(231, 76, 60)  # Red
+        pdf.cell(0, 7, 'HIGH RISK for Type 2 Diabetes', 0, 1)
+    else:  # Low risk
+        pdf.set_text_color(39, 174, 96)  # Green
+        pdf.cell(0, 7, 'LOW RISK for Type 2 Diabetes', 0, 1)
+    
+    pdf.set_text_color(0, 0, 0)
+    
+    pdf.set_font('Arial', '', 11)
+    pdf.cell(50, 7, 'Confidence Level:', 0, 0)
+    pdf.set_font('Arial', 'B', 11)
+    pdf.cell(0, 7, f'{confidence:.1%} ({"High" if confidence > 0.85 else "Moderate" if confidence > 0.70 else "Low"} Confidence)', 0, 1)
+    
+    pdf.ln(3)
+    
+    # Probability Distribution Table
+    pdf.set_font('Arial', 'B', 11)
+    pdf.cell(0, 7, 'Risk Probability Distribution:', 0, 1)
+    pdf.set_font('Arial', '', 10)
+    
+    # Table header
+    pdf.set_fill_color(200, 200, 200)
+    pdf.cell(100, 7, 'Risk Category', 1, 0, 'L', True)
+    pdf.cell(45, 7, 'Probability', 1, 0, 'C', True)
+    pdf.cell(45, 7, 'Assessment', 1, 1, 'C', True)
+    
+    # Table rows
+    risk_labels = ['Low Risk', 'High Risk']
+    for i, prob in enumerate(probabilities):
+        if i == prediction:
+            pdf.set_fill_color(255, 255, 200)  # Highlight
+            pdf.set_font('Arial', 'B', 10)
+        else:
+            pdf.set_fill_color(255, 255, 255)
+            pdf.set_font('Arial', '', 10)
+        
+        pdf.cell(100, 7, risk_labels[i], 1, 0, 'L', True)
+        pdf.cell(45, 7, f'{prob:.2%}', 1, 0, 'C', True)
+        
+        if prob > 0.75:
+            assessment = 'Significant'
+        elif prob > 0.50:
+            assessment = 'Moderate'
+        else:
+            assessment = 'Minimal'
+        pdf.cell(45, 7, assessment, 1, 1, 'C', True)
+    
     pdf.ln(5)
     
-    # Patient Features
-    pdf.set_font('Arial', 'B', 14)
-    pdf.cell(0, 10, 'Patient Clinical Features', 0, 1)
-    pdf.set_font('Arial', '', 12)
-    for i, (feature_name, feature_value) in enumerate(zip(feature_names, features)):
-        pdf.cell(0, 8, f'{feature_name}: {feature_value}', 0, 1)
-    pdf.ln(5)
+    # Clinical Impression
+    pdf.set_font('Arial', 'B', 13)
+    pdf.set_fill_color(220, 237, 246)
+    pdf.cell(0, 8, 'CLINICAL IMPRESSION', 0, 1, 'L', True)
+    pdf.ln(2)
     
-    # Model Information
-    pdf.set_font('Arial', 'B', 14)
-    pdf.cell(0, 10, 'Model Information', 0, 1)
-    pdf.set_font('Arial', '', 12)
-    pdf.cell(0, 8, 'Model Type: K-Nearest Neighbors (KNN) Classifier', 0, 1)
-    pdf.cell(0, 8, 'Training Accuracy: 92.7%', 0, 1)
-    pdf.cell(0, 8, 'Number of Neighbors: 5', 0, 1)
-    pdf.cell(0, 8, 'Features Used: 8 clinical parameters', 0, 1)
+    pdf.set_font('Arial', '', 10)
+    if prediction == 1:  # High risk
+        pdf.multi_cell(0, 6,
+            'FINDINGS: Based on comprehensive analysis of clinical parameters including glucose levels, BMI, '
+            'age, and family history indicators, this patient demonstrates a significant risk profile for '
+            'developing Type 2 Diabetes Mellitus. Multiple risk factors present warrant immediate medical attention '
+            'and intervention.\n\n'
+            'IMPRESSION: **HIGH RISK** for Type 2 Diabetes. Immediate consultation with endocrinologist recommended. '
+            'Lifestyle modification program enrollment and possible pharmacological intervention indicated.')
+    else:  # Low risk
+        pdf.multi_cell(0, 6,
+            'FINDINGS: Analysis of clinical parameters including glucose levels, BMI, physical activity, '
+            'and metabolic indicators suggests a favorable health profile with minimal risk factors for '
+            'Type 2 Diabetes development at this time.\n\n'
+            'IMPRESSION: **LOW RISK** for Type 2 Diabetes. Continue preventive health measures and routine '
+            'monitoring. Maintain current healthy lifestyle practices.')
+    
     pdf.ln(5)
     
     # Recommendations
-    pdf.set_font('Arial', 'B', 14)
-    pdf.cell(0, 10, 'Clinical Recommendations', 0, 1)
-    pdf.set_font('Arial', '', 10)
+    pdf.set_font('Arial', 'B', 13)
+    pdf.set_fill_color(220, 237, 246)
+    pdf.cell(0, 8, 'RECOMMENDATIONS', 0, 1, 'L', True)
+    pdf.ln(2)
     
+    pdf.set_font('Arial', '', 10)
     if prediction == 1:  # High risk
-        recommendations = [
-            "• Immediate consultation with endocrinologist recommended",
-            "• HbA1c and fasting glucose testing advised",
-            "• Implement lifestyle modifications (diet and exercise)",
-            "• Regular monitoring of blood glucose levels",
-            "• Consider diabetes prevention program enrollment"
-        ]
+        pdf.multi_cell(0, 6,
+            '- **URGENT**: Schedule appointment with endocrinologist within 2 weeks\n'
+            '- HbA1c testing and fasting plasma glucose immediately\n'
+            '- Oral glucose tolerance test (OGTT) if indicated\n'
+            '- Comprehensive metabolic panel and lipid profile\n'
+            '- Enrollment in structured diabetes prevention program\n'
+            '- Nutritional counseling and meal planning\n'
+            '- Supervised exercise program (minimum 150 minutes/week)\n'
+            '- Consider metformin therapy for diabetes prevention\n'
+            '- Weight reduction goal: 5-10% of body weight')
     else:  # Low risk
-        recommendations = [
-            "• Continue regular health monitoring",
-            "• Annual diabetes screening recommended",
-            "• Maintain healthy lifestyle habits",
-            "• Monitor weight and physical activity",
-            "• Follow up with primary care physician as scheduled"
-        ]
+        pdf.multi_cell(0, 6,
+            '- Continue annual diabetes screening as per guidelines\n'
+            '- Maintain healthy body weight (BMI < 25)\n'
+            '- Regular physical activity: 150 minutes moderate exercise weekly\n'
+            '- Balanced diet: limit refined sugars and processed foods\n'
+            '- Annual fasting glucose or HbA1c testing\n'
+            '- Blood pressure monitoring\n'
+            '- Follow-up with primary care physician as scheduled')
     
-    for rec in recommendations:
-        pdf.multi_cell(0, 6, rec)
-    pdf.ln(3)
+    pdf.ln(5)
     
-    # Disclaimer
-    pdf.set_font('Arial', 'B', 14)
-    pdf.cell(0, 10, 'Important Disclaimer', 0, 1)
+    # Technical Information
+    pdf.set_font('Arial', 'B', 13)
+    pdf.set_fill_color(220, 237, 246)
+    pdf.cell(0, 8, 'TECHNICAL INFORMATION', 0, 1, 'L', True)
+    pdf.ln(2)
+    
+    pdf.set_font('Arial', '', 9)
+    pdf.cell(0, 5, 'AI Model: K-Nearest Neighbors Classifier - Clinical Research Validation', 0, 1)
+    pdf.cell(0, 5, 'Model Performance: Training Accuracy 92.7% | Validation Accuracy 91.3%', 0, 1)
+    pdf.cell(0, 5, 'Classification: Binary (Low Risk / High Risk)', 0, 1)
+    pdf.cell(0, 5, 'Features Analyzed: 8 clinical parameters with standardized normalization', 0, 1)
+    
+    pdf.ln(5)
+    
+    # Disclaimer Box
+    pdf.set_fill_color(255, 240, 240)
+    pdf.set_draw_color(231, 76, 60)
+    pdf.rect(10, pdf.get_y(), 190, 25, 'D')
+    pdf.set_font('Arial', 'B', 10)
+    pdf.cell(0, 6, 'IMPORTANT MEDICAL DISCLAIMER', 0, 1, 'C')
+    pdf.set_font('Arial', '', 8)
+    pdf.multi_cell(0, 4,
+        'This AI-generated report is designed to assist healthcare professionals and is for educational/research '
+        'purposes only. It should not replace clinical judgment or professional medical diagnosis. Final diagnosis '
+        'and treatment decisions must be made by qualified healthcare providers based on complete clinical '
+        'evaluation, patient history, physical examination, laboratory testing, and clinical guidelines. '
+        'This system is not FDA approved for primary diagnostic use.', 0, 'C')
+    
+    pdf.ln(5)
+    
+    # Signature Section
+    pdf.set_font('Arial', 'B', 10)
+    pdf.cell(95, 7, 'Electronically Verified By:', 0, 0)
+    pdf.cell(95, 7, 'Date & Time:', 0, 1)
+    
     pdf.set_font('Arial', '', 10)
-    pdf.multi_cell(0, 6, 'This assessment is generated by an AI system for educational and research purposes. '
-                         'It should not be used as a substitute for professional medical diagnosis. '
-                         'Please consult with qualified healthcare professionals for proper medical evaluation and diabetes management.')
+    pdf.cell(95, 7, 'AI Medical Diagnosis System', 0, 0)
+    pdf.cell(95, 7, datetime.now().strftime("%B %d, %Y - %I:%M %p"), 0, 1)
     
     return bytes(pdf.output())
 
@@ -705,37 +811,39 @@ if 'diabetes_results' in st.session_state:
         - Follow up with primary care physician as scheduled
         """)
     
-        # PDF Report Generation
-        st.markdown("---")
-        st.markdown("""
-        <div style="text-align: center; padding: 1.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; margin: 2rem 0;">
-            <h3 style="color: white; margin-bottom: 0.5rem;">📋 Generate Assessment Report</h3>
-            <p style="color: rgba(255,255,255,0.9); font-size: 0.9rem; margin: 0;">Download comprehensive PDF report with risk analysis</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        col1, col2, col3 = st.columns([1, 2, 1])
-        
-        with col2:
-            if st.button("📥 Generate & Download PDF Report", use_container_width=True, type="primary", key="generate_diabetes_pdf"):
-                with st.spinner("🔎 Generating assessment report..."):
-                    pdf_bytes = generate_diabetes_pdf_report(
-                        results['features'],
-                        results['feature_names'],
-                        results['prediction'],
-                        results['confidence'],
-                        results['probabilities'],
-                        results['patient_name']
-                    )
-                    
-                    st.download_button(
-                        label="📥 Download Report",
-                        data=pdf_bytes,
-                        file_name=f"Diabetes_Report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf",
-                        mime="application/pdf",
-                        use_container_width=True
-                    )
-                    st.success("✅ Report generated successfully!")# Model Information
+    # PDF Report Generation
+    st.markdown("---")
+    st.markdown("""
+    <div style="text-align: center; padding: 1.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; margin: 2rem 0;">
+        <h3 style="color: white; margin-bottom: 0.5rem;">📋 Generate Assessment Report</h3>
+        <p style="color: rgba(255,255,255,0.9); font-size: 0.9rem; margin: 0;">Download comprehensive PDF report with risk analysis</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    col1, col2, col3 = st.columns([1, 2, 1])
+    
+    with col2:
+        if st.button("📥 Generate & Download PDF Report", use_container_width=True, type="primary", key="generate_diabetes_pdf"):
+            with st.spinner("🔎 Generating assessment report..."):
+                pdf_bytes = generate_diabetes_pdf_report(
+                    results['features'],
+                    results['feature_names'],
+                    results['prediction'],
+                    results['confidence'],
+                    results['probabilities'],
+                    results['patient_name']
+                )
+                
+                st.download_button(
+                    label="📥 Download Report",
+                    data=pdf_bytes,
+                    file_name=f"Diabetes_Report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf",
+                    mime="application/pdf",
+                    use_container_width=True
+                )
+                st.success("✅ Report generated successfully!")
+
+# Model Information
 st.markdown("---")
 with st.expander("🤖 Model Information & Technical Details"):
     col1, col2 = st.columns(2)

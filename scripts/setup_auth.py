@@ -37,8 +37,8 @@ def setup_env_file():
     
     if db_choice == "1":
         print("\n📝 MongoDB Setup")
-        print("Get your connection string from: https://www.mongodb.com/cloud/atlas")
-        print("Format: mongodb+srv://username:password@cluster.mongodb.net/database_name")
+        # print("Get your connection string from: https://www.mongodb.com/cloud/atlas")
+        # print("Format: mongodb+srv://username:password@cluster.mongodb.net/database_name")
         database_url = input("\nEnter MongoDB connection string: ").strip()
     
     elif db_choice == "2":
