@@ -1,17 +1,14 @@
-[theme]
-primaryColor = "#667eea"
-backgroundColor = "#c3cfe2"
-secondaryBackgroundColor = "#f5f7fa"
-textColor = "#2c3e50"
-font = "sans serif"
-
 [server]
 headless = true
-port = 10000
+port = 8502
 enableCORS = false
-enableXsrfProtection = true
+enableXsrfProtection = false
 baseUrlPath = ""
 
 [browser]
 gatherUsageStats = false
 serverAddress = "0.0.0.0"
+
+[client]
+showErrorDetails = true
+toolbarMode = "minimal"
