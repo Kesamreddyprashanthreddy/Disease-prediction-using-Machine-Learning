@@ -412,7 +412,7 @@ def generate_diabetes_pdf_report(features, feature_names, prediction, confidence
                          'It should not be used as a substitute for professional medical diagnosis. '
                          'Please consult with qualified healthcare professionals for proper medical evaluation and diabetes management.')
     
-    return pdf.output()
+    return pdf.output(dest='S').encode('latin-1')
 
 # Main page content
 st.title("🩺 Diabetes Risk Assessment")

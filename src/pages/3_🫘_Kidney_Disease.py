@@ -441,7 +441,7 @@ def generate_kidney_pdf_report(features, feature_names, prediction, confidence, 
                          'It should not be used as a substitute for professional medical diagnosis. '
                          'Please consult with qualified nephrologists and healthcare professionals for proper kidney disease evaluation.')
     
-    return pdf.output()
+    return pdf.output(dest='S').encode('latin-1')
 
 # Define feature names and normal ranges
 FEATURE_NAMES = [

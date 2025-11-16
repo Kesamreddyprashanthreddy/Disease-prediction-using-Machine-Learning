@@ -737,7 +737,7 @@ def generate_breast_cancer_pdf_report(image, prediction, confidence, probabiliti
     
     pdf.cell(95, 7, datetime.now().strftime("%B %d, %Y - %I:%M %p"), 0, 1)
     
-    return pdf.output()
+    return pdf.output(dest='S').encode('latin-1')
     pdf.ln(3)
     
     # Important Disclaimer
