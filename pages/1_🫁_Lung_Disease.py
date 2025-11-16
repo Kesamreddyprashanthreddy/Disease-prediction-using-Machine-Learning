@@ -268,44 +268,46 @@ def load_lung_model():
         if os.path.exists(model_path):
             st.info(f"🔍 Found model at: {model_path}")
             
-            # Method 1: Try standard loading with compile=False (works with TF 2.15+)
+            # Method 1: Build model architecture and load weights (MOST RELIABLE)
             try:
-                with st.spinner("Loading model..."):
-                    model = tf.keras.models.load_model(model_path, compile=False)
-                    model.compile(
-                        optimizer='adam',
-                        loss='categorical_crossentropy',
-                        metrics=['accuracy']
-                    )
+                # Build model with correct input shape (224x224 from error message)
+                model = tf.keras.Sequential([
+                    tf.keras.layers.Input(shape=(224, 224, 3)),
+                    tf.keras.layers.Conv2D(32, (3, 3), activation='relu', name='conv2d'),
+                    tf.keras.layers.MaxPooling2D((2, 2), name='max_pooling2d'),
+                    tf.keras.layers.Conv2D(64, (3, 3), activation='relu', name='conv2d_1'),
+                    tf.keras.layers.MaxPooling2D((2, 2), name='max_pooling2d_1'),
+                    tf.keras.layers.Conv2D(64, (3, 3), activation='relu', name='conv2d_2'),
+                    tf.keras.layers.Flatten(name='flatten'),
+                    tf.keras.layers.Dense(64, activation='relu', name='dense'),
+                    tf.keras.layers.Dense(3, activation='softmax', name='dense_1')
+                ])
+                
+                # Load weights with by_name=True and skip_mismatch=True
+                model.load_weights(model_path, skip_mismatch=True, by_name=True)
+                model.compile(
+                    optimizer='adam',
+                    loss='categorical_crossentropy',
+                    metrics=['accuracy']
+                )
                 st.success(f"✅ Model loaded successfully from {os.path.basename(model_path)}")
                 return model, True
             except Exception as e1:
-                st.warning(f"⚠️ Method 1 failed: {str(e1)[:100]}")
+                st.warning(f"⚠️ Method 1 failed: {str(e1)[:150]}")
                 
-                # Method 2: Build model and load weights with skip_mismatch
+                # Method 2: Try loading directly (may work in some TF versions)
                 try:
-                    model = tf.keras.Sequential([
-                        tf.keras.layers.Input(shape=(150, 150, 3)),
-                        tf.keras.layers.Conv2D(32, (3, 3), activation='relu'),
-                        tf.keras.layers.MaxPooling2D((2, 2)),
-                        tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),
-                        tf.keras.layers.MaxPooling2D((2, 2)),
-                        tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),
-                        tf.keras.layers.Flatten(),
-                        tf.keras.layers.Dense(64, activation='relu'),
-                        tf.keras.layers.Dense(3, activation='softmax')  # 3 classes: Normal, Pneumonia, Tuberculosis
-                    ])
-                    
-                    model.load_weights(model_path, skip_mismatch=True, by_name=False)
-                    model.compile(
-                        optimizer='adam',
-                        loss='categorical_crossentropy',
-                        metrics=['accuracy']
-                    )
-                    st.success(f"✅ Model loaded with weights (skip mismatch)")
+                    with st.spinner("Trying alternative loading method..."):
+                        model = tf.keras.models.load_model(model_path, compile=False)
+                        model.compile(
+                            optimizer='adam',
+                            loss='categorical_crossentropy',
+                            metrics=['accuracy']
+                        )
+                    st.success(f"✅ Model loaded successfully")
                     return model, True
                 except Exception as e2:
-                    st.warning(f"⚠️ Method 2 failed: {str(e2)[:100]}")
+                    st.warning(f"⚠️ Method 2 failed: {str(e2)[:150]}")
                     continue
     
     st.warning("⚠️ Lung disease model file not found in any expected location. Using demo mode.")
@@ -313,8 +315,8 @@ def load_lung_model():
 
 def preprocess_image(image):
     """Preprocess uploaded image for model prediction."""
-    # Use 150x150 for custom CNN models (most common for lung disease detection)
-    img = image.resize((150, 150))
+    # Use 224x224 to match VGG16/trained model input shape
+    img = image.resize((224, 224))
     
     # Convert to RGB if necessary
     if img.mode != 'RGB':
