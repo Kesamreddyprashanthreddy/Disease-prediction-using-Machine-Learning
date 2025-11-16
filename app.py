@@ -1,20 +1,20 @@
 """
-Gradio wrapper for Streamlit app - Hugging Face Spaces deployment
+Entry point for Render deployment
 """
 
 import subprocess
 import os
 
-# Set environment for Streamlit
-os.environ["STREAMLIT_SERVER_PORT"] = "7860"
-os.environ["STREAMLIT_SERVER_ADDRESS"] = "0.0.0.0"
+# Get port from environment (Render provides this)
+port = os.environ.get("PORT", "10000")
 
 # Launch Streamlit app
 if __name__ == "__main__":
     subprocess.run([
         "streamlit", "run", "Home.py",
-        "--server.port=7860",
+        f"--server.port={port}",
         "--server.address=0.0.0.0",
         "--server.headless=true",
-        "--browser.serverAddress=0.0.0.0"
+        "--browser.serverAddress=0.0.0.0",
+        "--browser.gatherUsageStats=false"
     ])
