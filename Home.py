@@ -26,7 +26,15 @@ st.markdown("""
     <style>
     /* Main container styling */
     .main {
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%) !important;
+    }
+    
+    .stApp {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%) !important;
+    }
+    
+    [data-testid="stAppViewContainer"] {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%) !important;
     }
     
     .top-nav h1 {
