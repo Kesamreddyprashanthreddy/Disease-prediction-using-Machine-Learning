@@ -270,133 +270,36 @@ def load_lung_model():
         os.path.join("/app", "saved_models", "lung_disease_model.h5")
     ]
     
-    # Debug: Check all paths and file sizes
-    st.sidebar.write("🔍 **Model Debug:**")
     for model_path in possible_paths:
         if os.path.exists(model_path):
-            file_size = os.path.getsize(model_path)
-            st.sidebar.write(f"✅ `{os.path.basename(model_path)}`")
-            st.sidebar.write(f"Size: {file_size / (1024*1024):.1f} MB")
-            
-            # Check if it's a Git LFS pointer (< 1KB = not downloaded)
-            if file_size < 1024:
-                st.sidebar.error(f"⚠️ Git LFS pointer only ({file_size} bytes)")
-                st.sidebar.write("Models not downloaded. See solution below.")
-                continue
-            
+            # Try direct loading
             try:
-                # Method 1: Try loading with compile=False and safe_mode
-                try:
-                    model = tf.keras.models.load_model(
-                        model_path, 
-                        compile=False,
-                        safe_mode=False  # Bypass strict deserialization
-                    )
-                    model.compile(
-                        optimizer='adam',
-                        loss='binary_crossentropy',
-                        metrics=['accuracy']
-                    )
-                    st.success(f"✅ Model loaded successfully from {os.path.basename(model_path)}")
-                    return model, True
-                except:
-                    pass
-                
-                # Method 2: Try with custom_objects to handle InputLayer
-                try:
-                    custom_objects = {
-                        'InputLayer': tf.keras.layers.InputLayer
-                    }
-                    model = tf.keras.models.load_model(
-                        model_path,
-                        compile=False,
-                        custom_objects=custom_objects
-                    )
-                    model.compile(
-                        optimizer='adam',
-                        loss='binary_crossentropy',
-                        metrics=['accuracy']
-                    )
-                    st.success(f"✅ Model loaded successfully from {os.path.basename(model_path)}")
-                    return model, True
-                except:
-                    pass
-                
-                # Method 3: Build a compatible model and load weights
-                try:
-                    # Build a simple CNN model that matches the expected architecture
-                    model = tf.keras.Sequential([
-                        tf.keras.layers.Input(shape=(150, 150, 3)),
-                        tf.keras.layers.Conv2D(32, (3, 3), activation='relu'),
-                        tf.keras.layers.MaxPooling2D((2, 2)),
-                        tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),
-                        tf.keras.layers.MaxPooling2D((2, 2)),
-                        tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),
-                        tf.keras.layers.Flatten(),
-                        tf.keras.layers.Dense(64, activation='relu'),
-                        tf.keras.layers.Dense(1, activation='sigmoid')
-                    ])
-                    
-                    # Try to load weights
-                    model.load_weights(model_path, skip_mismatch=False, by_name=False)
-                    model.compile(
-                        optimizer='adam',
-                        loss='binary_crossentropy',
-                        metrics=['accuracy']
-                    )
-                    st.success(f"✅ Model loaded successfully from {os.path.basename(model_path)} (weights only)")
-                    return model, True
-                except Exception as e:
-                    # Try with skip_mismatch=True as fallback
-                    try:
-                        model = tf.keras.Sequential([
-                            tf.keras.layers.Input(shape=(150, 150, 3)),
-                            tf.keras.layers.Conv2D(32, (3, 3), activation='relu'),
-                            tf.keras.layers.MaxPooling2D((2, 2)),
-                            tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),
-                            tf.keras.layers.MaxPooling2D((2, 2)),
-                            tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),
-                            tf.keras.layers.Flatten(),
-                            tf.keras.layers.Dense(64, activation='relu'),
-                            tf.keras.layers.Dense(1, activation='sigmoid')
-                        ])
-                        model.load_weights(model_path, skip_mismatch=True, by_name=False)
-                        model.compile(
-                            optimizer='adam',
-                            loss='binary_crossentropy',
-                            metrics=['accuracy']
-                        )
-                        st.success(f"✅ Model loaded successfully from {os.path.basename(model_path)} (partial weights)")
-                        return model, True
-                    except:
-                        pass
-                    
-            except Exception as e:
-                st.warning(f"❌ Failed to load model from {model_path}: {str(e)}")
-                continue
+                model = tf.keras.models.load_model(model_path, compile=False)
+                model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+                return model, True
+            except:
+                pass
+            
+            # Try with architecture
+            try:
+                model = tf.keras.Sequential([
+                    tf.keras.layers.Input(shape=(224, 224, 3)),
+                    tf.keras.layers.Conv2D(32, (3, 3), activation='relu', name='conv2d'),
+                    tf.keras.layers.MaxPooling2D((2, 2), name='max_pooling2d'),
+                    tf.keras.layers.Conv2D(64, (3, 3), activation='relu', name='conv2d_1'),
+                    tf.keras.layers.MaxPooling2D((2, 2), name='max_pooling2d_1'),
+                    tf.keras.layers.Conv2D(64, (3, 3), activation='relu', name='conv2d_2'),
+                    tf.keras.layers.Flatten(name='flatten'),
+                    tf.keras.layers.Dense(64, activation='relu', name='dense'),
+                    tf.keras.layers.Dense(3, activation='softmax', name='dense_1')
+                ])
+                model.load_weights(model_path, skip_mismatch=True, by_name=True)
+                model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+                return model, True
+            except:
+                pass
     
     st.warning("⚠️ Lung disease model file not found in any expected location. Using demo mode.")
-    
-    # Show solution for deployment platforms
-    with st.sidebar.expander("📦 Model Deployment Solutions"):
-        st.markdown("""
-        ### For Streamlit Cloud:
-        1. Streamlit Cloud doesn't support Git LFS
-        2. **Solution**: Use a cloud storage service:
-           - Upload models to Google Drive, Dropbox, or AWS S3
-           - Download in code with `gdown` or `boto3`
-           - Or use Hugging Face Model Hub
-        
-        ### For Hugging Face Spaces:
-        1. Git LFS should work automatically
-        2. Ensure `.gitattributes` file exists
-        3. Try "Factory reboot" in Settings
-        
-        ### Model File Locations Expected:
-        - `saved_models/lung_disease_model.h5` (286 MB)
-        - Should be ~286MB, not just a few bytes
-        """)
-    
     return None, False
 
 def preprocess_image(image):
