@@ -204,35 +204,25 @@ def load_breast_cancer_model():
     
     for model_path in possible_paths:
         if os.path.exists(model_path):
-            # Method 1: Build a compatible model and load weights (MOST RELIABLE)
+            st.info(f"🔍 Found model at: {model_path}")
+            
+            # Method 1: Try standard loading with compile=False (works with newer TF)
             try:
-                # Build a simple CNN model that matches the expected architecture
-                model = tf.keras.Sequential([
-                    tf.keras.layers.Input(shape=(150, 150, 3)),
-                    tf.keras.layers.Conv2D(32, (3, 3), activation='relu'),
-                    tf.keras.layers.MaxPooling2D((2, 2)),
-                    tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),
-                    tf.keras.layers.MaxPooling2D((2, 2)),
-                    tf.keras.layers.Conv2D(128, (3, 3), activation='relu'),
-                    tf.keras.layers.MaxPooling2D((2, 2)),
-                    tf.keras.layers.Flatten(),
-                    tf.keras.layers.Dense(128, activation='relu'),
-                    tf.keras.layers.Dropout(0.5),
-                    tf.keras.layers.Dense(2, activation='softmax')
-                ])
-                
-                # Load weights only
-                model.load_weights(model_path, skip_mismatch=False, by_name=False)
-                model.compile(
-                    optimizer='adam',
-                    loss='binary_crossentropy',
-                    metrics=['accuracy']
-                )
+                with st.spinner("Loading model..."):
+                    model = tf.keras.models.load_model(model_path, compile=False)
+                    model.compile(
+                        optimizer='adam',
+                        loss='categorical_crossentropy',
+                        metrics=['accuracy']
+                    )
                 st.success(f"✅ Model loaded successfully from {os.path.basename(model_path)}")
                 return model, True
             except Exception as e1:
-                # Try with skip_mismatch=True as fallback
+                st.warning(f"⚠️ Method 1 failed: {str(e1)[:100]}")
+                
+                # Method 2: Try with skip_mismatch for weights
                 try:
+                    # Build compatible architecture
                     model = tf.keras.Sequential([
                         tf.keras.layers.Input(shape=(150, 150, 3)),
                         tf.keras.layers.Conv2D(32, (3, 3), activation='relu'),
@@ -246,28 +236,18 @@ def load_breast_cancer_model():
                         tf.keras.layers.Dropout(0.5),
                         tf.keras.layers.Dense(2, activation='softmax')
                     ])
+                    
                     model.load_weights(model_path, skip_mismatch=True, by_name=False)
                     model.compile(
                         optimizer='adam',
-                        loss='binary_crossentropy',
+                        loss='categorical_crossentropy',
                         metrics=['accuracy']
                     )
-                    st.success(f"✅ Model loaded successfully (partial weights)")
+                    st.success(f"✅ Model loaded with weights (skip mismatch)")
                     return model, True
                 except Exception as e2:
-                    # Method 2: Try standard loading with compile=False
-                    try:
-                        model = tf.keras.models.load_model(model_path, compile=False)
-                        model.compile(
-                            optimizer='adam',
-                            loss='binary_crossentropy',
-                            metrics=['accuracy']
-                        )
-                        st.success(f"✅ Model loaded successfully from {os.path.basename(model_path)}")
-                        return model, True
-                    except Exception as e3:
-                        st.warning(f"⚠️ All loading methods failed for {os.path.basename(model_path)}")
-                        continue
+                    st.warning(f"⚠️ Method 2 failed: {str(e2)[:100]}")
+                    continue
     
     st.warning("⚠️ Breast cancer model file not found in any expected location. Using demo mode.")
     return None, False

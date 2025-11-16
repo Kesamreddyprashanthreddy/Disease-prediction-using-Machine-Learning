@@ -266,47 +266,24 @@ def load_lung_model():
     
     for model_path in possible_paths:
         if os.path.exists(model_path):
+            st.info(f"🔍 Found model at: {model_path}")
+            
+            # Method 1: Try standard loading with compile=False (works with TF 2.15+)
             try:
-                # Method 1: Try loading with compile=False and safe_mode
-                try:
-                    model = tf.keras.models.load_model(
-                        model_path, 
-                        compile=False,
-                        safe_mode=False  # Bypass strict deserialization
-                    )
+                with st.spinner("Loading model..."):
+                    model = tf.keras.models.load_model(model_path, compile=False)
                     model.compile(
                         optimizer='adam',
-                        loss='binary_crossentropy',
+                        loss='categorical_crossentropy',
                         metrics=['accuracy']
                     )
-                    st.success(f"✅ Model loaded successfully from {os.path.basename(model_path)}")
-                    return model, True
-                except:
-                    pass
+                st.success(f"✅ Model loaded successfully from {os.path.basename(model_path)}")
+                return model, True
+            except Exception as e1:
+                st.warning(f"⚠️ Method 1 failed: {str(e1)[:100]}")
                 
-                # Method 2: Try with custom_objects to handle InputLayer
+                # Method 2: Build model and load weights with skip_mismatch
                 try:
-                    custom_objects = {
-                        'InputLayer': tf.keras.layers.InputLayer
-                    }
-                    model = tf.keras.models.load_model(
-                        model_path,
-                        compile=False,
-                        custom_objects=custom_objects
-                    )
-                    model.compile(
-                        optimizer='adam',
-                        loss='binary_crossentropy',
-                        metrics=['accuracy']
-                    )
-                    st.success(f"✅ Model loaded successfully from {os.path.basename(model_path)}")
-                    return model, True
-                except:
-                    pass
-                
-                # Method 3: Build a compatible model and load weights
-                try:
-                    # Build a simple CNN model that matches the expected architecture
                     model = tf.keras.Sequential([
                         tf.keras.layers.Input(shape=(150, 150, 3)),
                         tf.keras.layers.Conv2D(32, (3, 3), activation='relu'),
@@ -316,46 +293,20 @@ def load_lung_model():
                         tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),
                         tf.keras.layers.Flatten(),
                         tf.keras.layers.Dense(64, activation='relu'),
-                        tf.keras.layers.Dense(1, activation='sigmoid')
+                        tf.keras.layers.Dense(3, activation='softmax')  # 3 classes: Normal, Pneumonia, Tuberculosis
                     ])
                     
-                    # Try to load weights
-                    model.load_weights(model_path, skip_mismatch=False, by_name=False)
+                    model.load_weights(model_path, skip_mismatch=True, by_name=False)
                     model.compile(
                         optimizer='adam',
-                        loss='binary_crossentropy',
+                        loss='categorical_crossentropy',
                         metrics=['accuracy']
                     )
-                    st.success(f"✅ Model loaded successfully from {os.path.basename(model_path)} (weights only)")
+                    st.success(f"✅ Model loaded with weights (skip mismatch)")
                     return model, True
-                except Exception as e:
-                    # Try with skip_mismatch=True as fallback
-                    try:
-                        model = tf.keras.Sequential([
-                            tf.keras.layers.Input(shape=(150, 150, 3)),
-                            tf.keras.layers.Conv2D(32, (3, 3), activation='relu'),
-                            tf.keras.layers.MaxPooling2D((2, 2)),
-                            tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),
-                            tf.keras.layers.MaxPooling2D((2, 2)),
-                            tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),
-                            tf.keras.layers.Flatten(),
-                            tf.keras.layers.Dense(64, activation='relu'),
-                            tf.keras.layers.Dense(1, activation='sigmoid')
-                        ])
-                        model.load_weights(model_path, skip_mismatch=True, by_name=False)
-                        model.compile(
-                            optimizer='adam',
-                            loss='binary_crossentropy',
-                            metrics=['accuracy']
-                        )
-                        st.success(f"✅ Model loaded successfully from {os.path.basename(model_path)} (partial weights)")
-                        return model, True
-                    except:
-                        pass
-                    
-            except Exception as e:
-                st.warning(f"❌ Failed to load model from {model_path}: {str(e)}")
-                continue
+                except Exception as e2:
+                    st.warning(f"⚠️ Method 2 failed: {str(e2)[:100]}")
+                    continue
     
     st.warning("⚠️ Lung disease model file not found in any expected location. Using demo mode.")
     return None, False
