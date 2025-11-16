@@ -142,7 +142,6 @@ with st.form("registration_form"):
                 
                 if success:
                     st.success(message)
-                    st.balloons()
                     st.info("Redirecting to login page...")
                     import time
                     time.sleep(1)

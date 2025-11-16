@@ -27,7 +27,7 @@ from database import get_prediction_operations
 from auth import auth
 
 # Page configuration
-st.set_page_config(page_title="Diabetes Risk Assessment", page_icon="🩺", layout="wide")
+st.set_page_config(page_title="Diabetes Risk Assessment", layout="wide")
 
 # Navigation buttons
 col1, col2, col3 = st.columns([1, 4, 1])
@@ -66,10 +66,9 @@ st.markdown("""
         padding: 0.5rem;
     }
     .metric-card {
-        background: white;
+        background: transparent;
         padding: 1rem;
         border-radius: 10px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         text-align: center;
         margin: 0.5rem 0;
     }

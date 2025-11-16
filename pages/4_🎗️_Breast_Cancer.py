@@ -26,7 +26,7 @@ from database import get_prediction_operations
 from auth import auth
 
 # Page configuration
-st.set_page_config(page_title="Breast Cancer Screening", page_icon="🎗️", layout="wide")
+st.set_page_config(page_title="Breast Cancer Screening", layout="wide")
 
 # Navigation buttons
 col1, col2, col3 = st.columns([1, 4, 1])
@@ -85,10 +85,9 @@ st.markdown("""
         margin: 0.5rem 0;
     }
     .confidence-meter {
-        background: white;
+        background: transparent;
         padding: 1rem;
         border-radius: 10px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         text-align: center;
         margin: 0.5rem 0;
     }
@@ -814,7 +813,7 @@ if uploaded_file is not None:
     
     with col2:
         st.markdown("### 🔬 Analysis Controls")
-        st.markdown('<div style="background: white; padding: 1.5rem; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">', unsafe_allow_html=True)
+        st.markdown('<div style="background: transparent; padding: 1.5rem; border-radius: 15px;">', unsafe_allow_html=True)
         
         # Patient information
         patient_name = st.text_input("Patient ID/Name (Optional)", placeholder="Enter patient identifier")

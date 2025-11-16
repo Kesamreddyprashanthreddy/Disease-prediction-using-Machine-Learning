@@ -26,7 +26,7 @@ from auth import auth
 from database import get_prediction_operations
 
 # Page configuration
-st.set_page_config(page_title="Lung Disease Detection", page_icon="🫁", layout="wide")
+st.set_page_config(page_title="Lung Disease Detection", layout="wide")
 
 # Navigation buttons
 col1, col2, col3 = st.columns([1, 4, 1])
@@ -51,10 +51,9 @@ st.markdown("""
     
     /* Top navigation */
     .top-nav {
-        background: white;
+        background: transparent;
         padding: 1rem 2rem;
         border-radius: 10px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         margin-bottom: 2rem;
     }
     
@@ -82,10 +81,9 @@ st.markdown("""
     
     /* Auth prompt box */
     .auth-prompt {
-        background: white;
+        background: transparent;
         padding: 3rem 2rem;
         border-radius: 20px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         text-align: center;
         max-width: 600px;
         margin: 3rem auto;
@@ -132,7 +130,7 @@ st.markdown("""
     
     /* Upload area */
     .upload-area {
-        background: white;
+        background: transparent;
         border: 2px dashed #667eea;
         border-radius: 15px;
         padding: 2rem;
@@ -841,7 +839,7 @@ if uploaded_file is not None:
     
     with col2:
         st.markdown("### 🔬 Analysis Controls")
-        st.markdown('<div style="background: white; padding: 1.5rem; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">', unsafe_allow_html=True)
+        st.markdown('<div style="background: transparent; padding: 1.5rem; border-radius: 15px;">', unsafe_allow_html=True)
         
         # Patient name input
         if auth.is_authenticated():

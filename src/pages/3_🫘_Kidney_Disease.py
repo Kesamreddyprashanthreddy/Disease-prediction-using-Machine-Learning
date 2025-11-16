@@ -27,7 +27,7 @@ from database import get_prediction_operations
 from auth import auth
 
 # Page configuration
-st.set_page_config(page_title="Kidney Disease Analysis", page_icon="🫘", layout="wide")
+st.set_page_config(page_title="Kidney Disease Analysis", layout="wide")
 
 # Navigation buttons
 col1, col2, col3 = st.columns([1, 4, 1])

@@ -21,7 +21,7 @@ from database import get_prediction_operations
 from auth import auth
 
 # Page configuration
-st.set_page_config(page_title="Prediction History", page_icon="📊", layout="wide")
+st.set_page_config(page_title="Prediction History", layout="wide")
 
 # Navigation buttons
 col1, col2, col3 = st.columns([1, 4, 1])
@@ -159,27 +159,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Check authentication
-if not auth.check_auth():
-    st.markdown("""
-    <div class="page-header">
-        <h1 class="page-title">📊 Prediction History</h1>
-        <p class="page-subtitle">View your screening records and track health trends</p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("""
-    <div class="auth-prompt">
-        <div class="auth-prompt-icon">🔒</div>
-        <h2 class="auth-prompt-title">Authentication Required</h2>
-        <p class="auth-prompt-text">Please log in to view your prediction history</p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    col1, col2, col3 = st.columns([1, 1, 1])
-    with col2:
-        if st.button("🔑 Go to Login", use_container_width=True, type="primary"):
-            st.switch_page("pages/_Login.py")
-    st.stop()
+auth.require_auth()
 
 # Page header
 st.markdown("""

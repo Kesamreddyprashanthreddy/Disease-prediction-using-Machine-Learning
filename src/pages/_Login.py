@@ -102,7 +102,6 @@ with st.form("login_form"):
                 
                 if success:
                     st.success(message)
-                    st.balloons()
                     
                     # Check if there's a redirect page stored
                     if 'redirect_after_login' in st.session_state:

@@ -29,6 +29,7 @@ python scripts/train_breast_cancer_image.py
 ### Option 2: Download Pre-trained Models
 
 Contact the repository owner for access to pre-trained models:
+
 - Email: [Add your email]
 - Or open an issue requesting model files
 
@@ -63,11 +64,13 @@ After training, you should have these files:
 ## 🆘 Troubleshooting
 
 **Model not found error?**
+
 - Make sure you've trained the models or downloaded them
 - Check that files are in the `saved_models/` directory
 - Verify file permissions (models should be readable)
 
 **Out of memory during training?**
+
 - Reduce batch size in training scripts
 - Close other applications
 - Consider using Google Colab for training
