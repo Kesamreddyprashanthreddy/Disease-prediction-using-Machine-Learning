@@ -900,9 +900,3 @@ with st.expander("🤖 Model Information & Technical Details"):
     <p>🏥 AI Medical Diagnosis System | Diabetes Risk Assessment Module</p>
     </div>
     """, unsafe_allow_html=True)
-
-# Authentication error handling
-if not st.session_state.get('authentication_status', False):
-    st.error("🔒 Authentication required to access this module.")
-    st.info("Please return to the main page and login first.")
-    st.stop()
