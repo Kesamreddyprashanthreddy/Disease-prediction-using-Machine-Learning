@@ -204,43 +204,70 @@ def load_breast_cancer_model():
     
     for model_path in possible_paths:
         if os.path.exists(model_path):
-            # Method 1: Build model architecture and load weights (MOST RELIABLE)
+            # Method 1: Build a compatible model and load weights (MOST RELIABLE)
             try:
-                # Build model with 150x150 input (standard for breast cancer mammograms)
+                # Build a simple CNN model that matches the expected architecture
                 model = tf.keras.Sequential([
                     tf.keras.layers.Input(shape=(150, 150, 3)),
-                    tf.keras.layers.Conv2D(32, (3, 3), activation='relu', name='conv2d'),
-                    tf.keras.layers.MaxPooling2D((2, 2), name='max_pooling2d'),
-                    tf.keras.layers.Conv2D(64, (3, 3), activation='relu', name='conv2d_1'),
-                    tf.keras.layers.MaxPooling2D((2, 2), name='max_pooling2d_1'),
-                    tf.keras.layers.Conv2D(128, (3, 3), activation='relu', name='conv2d_2'),
-                    tf.keras.layers.MaxPooling2D((2, 2), name='max_pooling2d_2'),
-                    tf.keras.layers.Flatten(name='flatten'),
-                    tf.keras.layers.Dense(128, activation='relu', name='dense'),
-                    tf.keras.layers.Dropout(0.5, name='dropout'),
-                    tf.keras.layers.Dense(2, activation='softmax', name='dense_1')
+                    tf.keras.layers.Conv2D(32, (3, 3), activation='relu'),
+                    tf.keras.layers.MaxPooling2D((2, 2)),
+                    tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),
+                    tf.keras.layers.MaxPooling2D((2, 2)),
+                    tf.keras.layers.Conv2D(128, (3, 3), activation='relu'),
+                    tf.keras.layers.MaxPooling2D((2, 2)),
+                    tf.keras.layers.Flatten(),
+                    tf.keras.layers.Dense(128, activation='relu'),
+                    tf.keras.layers.Dropout(0.5),
+                    tf.keras.layers.Dense(2, activation='softmax')
                 ])
                 
-                # Load weights with by_name=True and skip_mismatch=True
-                model.load_weights(model_path, skip_mismatch=True, by_name=True)
+                # Load weights only
+                model.load_weights(model_path, skip_mismatch=False, by_name=False)
                 model.compile(
                     optimizer='adam',
-                    loss='categorical_crossentropy',
+                    loss='binary_crossentropy',
                     metrics=['accuracy']
                 )
+                st.success(f"✅ Model loaded successfully from {os.path.basename(model_path)}")
                 return model, True
             except Exception as e1:
-                # Method 2: Try loading directly (may work in some TF versions)
+                # Try with skip_mismatch=True as fallback
                 try:
-                    model = tf.keras.models.load_model(model_path, compile=False)
+                    model = tf.keras.Sequential([
+                        tf.keras.layers.Input(shape=(150, 150, 3)),
+                        tf.keras.layers.Conv2D(32, (3, 3), activation='relu'),
+                        tf.keras.layers.MaxPooling2D((2, 2)),
+                        tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),
+                        tf.keras.layers.MaxPooling2D((2, 2)),
+                        tf.keras.layers.Conv2D(128, (3, 3), activation='relu'),
+                        tf.keras.layers.MaxPooling2D((2, 2)),
+                        tf.keras.layers.Flatten(),
+                        tf.keras.layers.Dense(128, activation='relu'),
+                        tf.keras.layers.Dropout(0.5),
+                        tf.keras.layers.Dense(2, activation='softmax')
+                    ])
+                    model.load_weights(model_path, skip_mismatch=True, by_name=False)
                     model.compile(
                         optimizer='adam',
-                        loss='categorical_crossentropy',
+                        loss='binary_crossentropy',
                         metrics=['accuracy']
                     )
+                    st.success(f"✅ Model loaded successfully (partial weights)")
                     return model, True
                 except Exception as e2:
-                    continue
+                    # Method 2: Try standard loading with compile=False
+                    try:
+                        model = tf.keras.models.load_model(model_path, compile=False)
+                        model.compile(
+                            optimizer='adam',
+                            loss='binary_crossentropy',
+                            metrics=['accuracy']
+                        )
+                        st.success(f"✅ Model loaded successfully from {os.path.basename(model_path)}")
+                        return model, True
+                    except Exception as e3:
+                        st.warning(f"⚠️ All loading methods failed for {os.path.basename(model_path)}")
+                        continue
     
     st.warning("⚠️ Breast cancer model file not found in any expected location. Using demo mode.")
     return None, False
