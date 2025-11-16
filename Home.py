@@ -6,12 +6,24 @@ Multi-Disease Prediction System with Real-Time Authentication
 
 import streamlit as st
 import sys
+import os
 from pathlib import Path
 
-# Add src directory to path
-sys.path.insert(0, str(Path(__file__).parent / "src"))
+# Add src directory to path - works for both local and deployed environments
+current_dir = Path(__file__).parent
+src_dir = current_dir / "src"
+if src_dir.exists():
+    sys.path.insert(0, str(src_dir))
+else:
+    # If already in src directory (Render deployment)
+    sys.path.insert(0, str(current_dir))
 
-from auth import auth
+try:
+    from auth import auth
+except ImportError:
+    # Alternative import for different deployment structures
+    import auth as auth_module
+    auth = auth_module.auth
 
 # Page configuration
 st.set_page_config(
