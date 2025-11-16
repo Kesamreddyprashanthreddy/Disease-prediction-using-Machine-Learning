@@ -8,10 +8,15 @@ import streamlit as st
 import sys
 from pathlib import Path
 
-# Add src directory to path
+# Add src directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent / "src"))
+sys.path.insert(0, str(Path(__file__).parent))
 
-from auth import auth
+try:
+    from src.auth import auth
+except ImportError:
+    # Fallback for different deployment environments
+    from auth import auth
 
 # Page configuration
 st.set_page_config(

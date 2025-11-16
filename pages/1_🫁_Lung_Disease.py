@@ -19,11 +19,17 @@ import plotly.graph_objects as go
 import io
 import base64
 
-# Add parent directory to path
+# Add src directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from auth import auth
-from database import get_prediction_operations
+try:
+    from src.auth import auth
+    from src.database import get_prediction_operations
+except ImportError:
+    # Fallback for different deployment environments
+    from auth import auth
+    from database import get_prediction_operations
 
 # Page configuration
 st.set_page_config(page_title="Lung Disease Detection", layout="wide")

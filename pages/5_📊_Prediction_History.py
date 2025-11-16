@@ -14,11 +14,17 @@ import plotly.express as px
 import plotly.graph_objects as go
 import json
 
-# Add parent directory to path
+# Add src directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from database import get_prediction_operations
-from auth import auth
+try:
+    from src.database import get_prediction_operations
+    from src.auth import auth
+except ImportError:
+    # Fallback for different deployment environments
+    from database import get_prediction_operations
+    from auth import auth
 
 # Page configuration
 st.set_page_config(page_title="Prediction History", layout="wide")
