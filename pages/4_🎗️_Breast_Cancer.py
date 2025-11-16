@@ -430,7 +430,7 @@ def generate_breast_cancer_pdf_report(image, prediction, confidence, probabiliti
     else:
         pdf.multi_cell(0, 6, 'Benign findings. Continue routine screening as per guidelines.')
     
-    return bytes(pdf.output())
+    return pdf.output(dest='S').encode('latin-1')
     class BreastCancerReport(FPDF):
         def header(self):
             # Header with medical center branding
@@ -735,7 +735,7 @@ def generate_breast_cancer_pdf_report(image, prediction, confidence, probabiliti
                          'clinical examination and additional imaging as appropriate. Final diagnosis requires tissue '
                          'sampling when indicated. Please consult with qualified radiologists and breast specialists.')
     
-    return bytes(pdf.output())
+    return pdf.output(dest='S').encode('latin-1')
 
 # Main page content
 st.title("🎗️ Breast Cancer Screening")

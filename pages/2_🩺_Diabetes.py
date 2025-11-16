@@ -323,7 +323,7 @@ def generate_diabetes_pdf_report(features, feature_names, prediction, confidence
     else:
         pdf.multi_cell(0, 6, 'Low diabetes risk. Maintain healthy lifestyle and regular checkups.')
     
-    return bytes(pdf.output())
+    return pdf.output(dest='S').encode('latin-1')
     
     class DiabetesReport(FPDF):
         def header(self):
@@ -411,7 +411,7 @@ def generate_diabetes_pdf_report(features, feature_names, prediction, confidence
                          'It should not be used as a substitute for professional medical diagnosis. '
                          'Please consult with qualified healthcare professionals for proper medical evaluation and diabetes management.')
     
-    return bytes(pdf.output())
+    return pdf.output(dest='S').encode('latin-1')
 
 # Main page content
 st.title("🩺 Diabetes Risk Assessment")
