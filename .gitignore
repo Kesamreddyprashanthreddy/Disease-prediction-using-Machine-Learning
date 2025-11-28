@@ -1,0 +1,156 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+.project
+.pydevproject
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Database
+*.db
+*.sqlite3
+users.db
+*.mdb
+
+# Streamlit secrets - IMPORTANT: Never commit!
+.streamlit/secrets.toml
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# Environment variables - NEVER commit these!
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+
+# Large datasets (keep structure but ignore large files)
+all-mias/*.pgm
+breast_cancer/
+Lung_Opacity/
+mias_images_png/
+mias_images_sorted/
+datasets/
+data/raw/*.csv
+data/raw/*.xlsx
+data/raw/*.zip
+data/processed/*.pkl
+
+# Model files - Too large for GitHub (use Git LFS or external storage)
+saved_models/*.h5
+saved_models/*.joblib
+saved_models/*.pkl
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+*~
+.cache/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+notebooks/*.ipynb
+
+# Documentation
+docs/_build/
+docs/_static/
+docs/_templates/
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Security - NEVER commit sensitive data
+*.pem
+*.key
+*.crt
+*.cer
+*.p12
+secrets/
+credentials/
+
+# Old/backup files
+*.old
+*.backup
+*_backup.py
+*_old.py
+main.py
+app.py
+tkinters.py
+demo_*.py
+app_with_*.py
+
+# Git
+.git/
