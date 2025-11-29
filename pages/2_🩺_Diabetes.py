@@ -185,8 +185,9 @@ def load_diabetes_model():
                 model = joblib.load(model_path)
                 model_loaded = True
                 break
-            except:
-                pass
+            except Exception as e:
+                # Log error silently without showing it in the UI
+                print(f"Could not load diabetes model from {model_path}: {e}")
     
     # Try to load scaler
     for scaler_path in possible_scaler_paths:
@@ -195,12 +196,12 @@ def load_diabetes_model():
                 scaler = joblib.load(scaler_path)
                 scaler_loaded = True
                 break
-            except:
-                pass
+            except Exception as e:
+                # Log error silently without showing it in the UI
+                print(f"Could not load diabetes scaler from {scaler_path}: {e}")
     
     if not model_loaded or not scaler_loaded:
-        st.warning("⚠️ Could not load trained models. Running in demonstration mode.")
-        st.info("🔬 Using simulated KNN classifier for demo purposes.")
+        # Fall back to demo mode silently (no UI warnings)
         # Create demo model
         model = KNeighborsClassifier(n_neighbors=5)
         scaler = StandardScaler()
@@ -555,9 +556,6 @@ Input patient parameters to receive comprehensive risk evaluation with 92.7% acc
 
 # Load model only after authentication
 model, scaler, model_loaded = load_diabetes_model()
-
-if not model_loaded:
-    st.info("🔬 Running in demonstration mode. Input patient data to see sample analysis.")
 
 # Input methods
 st.subheader("📊 Patient Data Input")

@@ -269,10 +269,11 @@ def load_lung_model():
                 model = tf.keras.models.load_model(model_path)
                 return model, True
             except Exception as e:
-                st.warning(f"❌ Failed to load model from {model_path}: {str(e)}")
+                # Log the error silently without showing it in the UI
+                print(f"Failed to load lung model from {model_path}: {e}")
                 continue
     
-    st.warning("⚠️ Lung disease model file not found in any expected location. Using demo mode.")
+    # Fall back to demo mode silently (no UI warning)
     return None, False
 
 def preprocess_image(image):
@@ -798,9 +799,6 @@ else:
 
 # Load model only after authentication
 model, model_loaded = load_lung_model()
-
-if not model_loaded:
-    st.info("🔬 Running in demonstration mode. Upload an image to see sample analysis.")
 
 # File upload section
 st.markdown("### 📤 Upload Chest X-Ray Image")

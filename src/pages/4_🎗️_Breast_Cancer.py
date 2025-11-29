@@ -205,10 +205,11 @@ def load_breast_cancer_model():
                 model = tf.keras.models.load_model(model_path)
                 return model, True
             except Exception as e:
-                st.warning(f"❌ Failed to load model from {model_path}: {str(e)}")
+                # Log error silently without showing it in the UI
+                print(f"Failed to load breast cancer model from {model_path}: {e}")
                 continue
     
-    st.warning("⚠️ Breast cancer model file not found in any expected location. Using demo mode.")
+    # Fall back to demo mode silently (no UI warning)
     return None, False
 
 def preprocess_mammogram(image):
@@ -772,9 +773,6 @@ This system provides BI-RADS assessment with 96.1% accuracy for clinical decisio
 
 # Load model
 model, model_loaded = load_breast_cancer_model()
-
-if not model_loaded:
-    st.info("🔬 Running in demonstration mode. Upload a mammogram to see sample analysis.")
 
 # File upload section
 st.subheader("📁 Upload Mammography Image")

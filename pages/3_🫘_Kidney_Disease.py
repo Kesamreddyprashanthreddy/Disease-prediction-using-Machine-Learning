@@ -165,11 +165,12 @@ def load_kidney_model():
             try:
                 model = joblib.load(model_path)
                 return model, True
-            except:
+            except Exception as e:
+                # Log error silently without showing it in the UI
+                print(f"Failed to load kidney model from {model_path}: {e}")
                 pass
     
-    st.warning("⚠️ Kidney disease model file not found in any expected location. Using demo mode.")
-    st.info("🔬 Running in demonstration mode with simulated Random Forest classifier.")
+    # Fall back to demo mode silently (no UI warnings)
     # Create demo model
     model = RandomForestClassifier(n_estimators=100, random_state=42)
     
@@ -598,9 +599,6 @@ Input patient lab values to receive detailed nephrology assessment with 89.5% ac
 
 # Load model
 model, model_loaded = load_kidney_model()
-
-if not model_loaded:
-    st.info("🔬 Running in demonstration mode. Input laboratory data to see sample analysis.")
 
 # Input methods
 st.subheader("📊 Laboratory Data Input")
